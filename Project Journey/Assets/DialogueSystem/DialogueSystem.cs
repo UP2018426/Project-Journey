@@ -30,8 +30,20 @@ public class DialogueSystem : MonoBehaviour
 
             foreach(string word in words)
             {
+                switch (UnityEngine.Random.Range(0, 1))
+                {
+                    case 0 :
+                        shuffledWords.Add(ShuffleString(word));
+                        break;
+                    case 1 :
+                        shuffledWords.Add(WordToSpecialCharacters(word));
+                        break;
+                    default:
+                        break;
+                }
+
                 //shuffledWords.Add(ShuffleString(word));
-                shuffledWords.Add(WordToSpecialCharacters(word));
+                //shuffledWords.Add(WordToSpecialCharacters(word));
             }
 
             tmp.text = CombineWordsToSentence(shuffledWords);
