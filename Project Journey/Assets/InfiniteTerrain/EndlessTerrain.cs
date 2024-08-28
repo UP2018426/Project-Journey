@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Splines;
 
 public class EndlessTerrain : MonoBehaviour {
 
@@ -59,7 +60,8 @@ public class EndlessTerrain : MonoBehaviour {
 
 				if (terrainChunkDictionary.ContainsKey (viewedChunkCoord)) {
 					terrainChunkDictionary [viewedChunkCoord].UpdateTerrainChunk ();
-				} else {
+				} else
+				{
 					terrainChunkDictionary.Add (viewedChunkCoord, new TerrainChunk (viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial));
 				}
 
@@ -85,7 +87,7 @@ public class EndlessTerrain : MonoBehaviour {
 
 		public TerrainChunk(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material) {
 			this.detailLevels = detailLevels;
-
+			
 			position = coord * size;
 			bounds = new Bounds(position,Vector2.one * size);
 			Vector3 positionV3 = new Vector3(position.x,0,position.y);
@@ -105,7 +107,7 @@ public class EndlessTerrain : MonoBehaviour {
 				lodMeshes[i] = new LODMesh(detailLevels[i].lod, UpdateTerrainChunk);
 			}
 
-			mapGenerator.RequestMapData(position,OnMapDataReceived);
+			mapGenerator.RequestMapData(position, OnMapDataReceived);
 		}
 
 		void OnMapDataReceived(MapData mapData) {
