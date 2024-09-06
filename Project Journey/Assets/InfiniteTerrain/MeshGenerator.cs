@@ -74,7 +74,7 @@ public static class MeshGenerator
         return meshData;
     }
 
-    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultipliernotused, float vertheight, AnimationCurve _heightCurve, int levelOfDetail)
+    public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultipliernotused, float[,] vertheight, AnimationCurve _heightCurve, int levelOfDetail)
     {
         AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys);
 
@@ -121,7 +121,7 @@ public static class MeshGenerator
                 int vertexIndex = vertexIndicesMap[x, y];
 
                 Vector2 percent = new Vector2((x - meshSimpflicationIncrement) / (float)meshSize, (y - meshSimpflicationIncrement) / (float)meshSize);
-                float height = vertheight;
+                float height = vertheight[x,y];
                 
                 
                 Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimplified, height, topLeftZ - percent.y * meshSizeUnsimplified);

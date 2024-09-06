@@ -160,7 +160,7 @@ public class MapGenerator : MonoBehaviour
         const float constant = 600f / halfChunk;
         //
 
-        float height = 0;
+        float[,] height = new float[mapChunkSize+2,mapChunkSize+2];
 
         for (int y = 0; y < mapChunkSize; y++)
         {
@@ -233,7 +233,7 @@ public class MapGenerator : MonoBehaviour
                 // If "distance" closer than EvaluationCurve(furthest point)
                 // Use EvaluationCurve to set vertex pos to be somewhere between currentHeight and Evaluation.
 
-                height = meshHeightCurve.Evaluate(noiseMap[x, y]) * meshHeightMultiplier;
+                height[x+1,y+1] = meshHeightCurve.Evaluate(noiseMap[x, y]) * meshHeightMultiplier;
 
                 if (dist < 30)
                 {
@@ -254,7 +254,7 @@ public class MapGenerator : MonoBehaviour
                         Debug.Log(closestPosition.y);
                     }
 
-                    height = closestPosition.y;
+                    height[x + 1, y + 1] = (heightOfRoad) * meshHeightMultiplier ;
 
                     //noiseMap[x, y] = heightOfRoad;
 
@@ -378,9 +378,9 @@ public struct MapData
 {
     public readonly float[,] heightMap;
     public readonly Color[] colourMap;
-    public readonly float height;
+    public readonly float[,] height;
 
-    public MapData(float[,] heightMap, Color[] colourMap, float height)
+    public MapData(float[,] heightMap, Color[] colourMap, float[,] height)
     {
         this.heightMap = heightMap;
         this.colourMap = colourMap;
