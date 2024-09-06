@@ -6,6 +6,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.Splines;
+using UnityEngine.Profiling;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -114,7 +115,7 @@ public class MapGenerator : MonoBehaviour
 
     void MeshDataThread(MapData mapData, int lod, Action<MeshData> callback)
     {
-        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, meshHeightCurve, lod);
+        MeshData meshData = MeshGenerator.GenerateTerrainMesh(mapData.heightMap, meshHeightMultiplier, mapData.height , meshHeightCurve, lod);
 
         lock (meshDataThreadInfoQueue)
         {
@@ -158,7 +159,9 @@ public class MapGenerator : MonoBehaviour
         const float halfChunk = ((mapChunkSize + 1) / 2f); // TODO: THis needs to change based on chunk LOD
         const float constant = 600f / halfChunk;
         //
-        
+
+        float height = 0;
+
         for (int y = 0; y < mapChunkSize; y++)
         {
             for (int x = 0; x < mapChunkSize; x++)
@@ -184,8 +187,8 @@ public class MapGenerator : MonoBehaviour
                 //const float constant = 595f / halfChunk;
                 //const float constant = 600f / halfChunk;
                 float3 currentWorldPosition = new Vector3(((x - halfChunk) * constant), meshHeightCurve.Evaluate(currentHeight) * meshHeightMultiplier * 5f, -((y - halfChunk) * constant)); // TODO: Add the center offset
-                //TODO: The above is only off by a tiny ammount (possible 1 unit of "constant" or "constant / 2") I.F.
-                
+                                                                                                                                                                                             //TODO: The above is only off by a tiny ammount (possible 1 unit of "constant" or "constant / 2") I.F.
+
                 /*if (x > 8 && x < 12 && y > 8 && y < 12)
                 {
                     Debug.Log(currentWorldPosition);
@@ -197,7 +200,7 @@ public class MapGenerator : MonoBehaviour
                     Debug.Log(currentWorldPosition);
                     Debug.Log(meshHeightCurve.Evaluate(currentHeight));
                 }*/
-                
+
                 /*  
                 for (int i = 0; i < roadManager.AllRoadSplineList.Count - 1; i++)
                 {
@@ -209,12 +212,12 @@ public class MapGenerator : MonoBehaviour
                         closestRoadIndex = i;
                     }
                 }*/
-                
+
                 // Sample the selected road segments to find the closest point to a spline. 
 
                 Spline _spline = roadManager.AllRoadSplineListSpline[0];
                 dist = SplineUtility.GetNearestPoint(_spline, currentWorldPosition, out closestPosition, out outFloat, 4, 2);
-                
+
                 //Debug.Log(dist);
                 /*if ((new Vector3(closestPosition.x, closestPosition.y, closestPosition.z) - new Vector3(currentWorldPosition.x, currentWorldPosition.y, currentWorldPosition.z)).magnitude < 100f)
                 {
@@ -226,10 +229,12 @@ public class MapGenerator : MonoBehaviour
                 {
                     Debug.Log(dist);
                 }*/
-                
+
                 // If "distance" closer than EvaluationCurve(furthest point)
-                    // Use EvaluationCurve to set vertex pos to be somewhere between currentHeight and Evaluation.
-               
+                // Use EvaluationCurve to set vertex pos to be somewhere between currentHeight and Evaluation.
+
+                height = meshHeightCurve.Evaluate(noiseMap[x, y]) * meshHeightMultiplier;
+
                 if (dist < 30)
                 {
                     //float heightOfRoad = (closestPosition.y / meshHeightMultiplier / 5);
@@ -246,10 +251,12 @@ public class MapGenerator : MonoBehaviour
 
                     if (y == 10)
                     {
-                        Debug.Log(heightOfRoad);
+                        Debug.Log(closestPosition.y);
                     }
 
-                    noiseMap[x, y] = heightOfRoad;
+                    height = closestPosition.y;
+
+                    //noiseMap[x, y] = heightOfRoad;
 
                     //noiseMap[x, y] = Mathf.Lerp(currentHeight, heightOfRoad, -lerpValue / 5);
                     //noiseMap[x, y] = heightOfRoad;
@@ -276,7 +283,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        return new MapData(noiseMap, colourMap);
+        return new MapData(noiseMap, colourMap, height);
     }
     
     AnimationCurve CreateInverseCurve(AnimationCurve curve)
@@ -371,11 +378,13 @@ public struct MapData
 {
     public readonly float[,] heightMap;
     public readonly Color[] colourMap;
+    public readonly float height;
 
-    public MapData(float[,] heightMap, Color[] colourMap)
+    public MapData(float[,] heightMap, Color[] colourMap, float height)
     {
         this.heightMap = heightMap;
         this.colourMap = colourMap;
+        this.height = height;
     }
 }
 
