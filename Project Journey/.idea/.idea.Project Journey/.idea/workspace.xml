@@ -5,11 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7ae4f988-2552-4ccb-8f10-a189a7dfdc9e" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Assets/InfiniteTerrain/EndlessTerrain.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/InfiniteTerrain/EndlessTerrain.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Project Journey/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Project Journey/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/InfiniteTerrain/MapGenerator.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/InfiniteTerrain/MapGenerator.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/InfiniteTerrain.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/InfiniteTerrain.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/InfiniteRoads.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/InfiniteRoads.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/SplineExtrusion/RoadExtrusion.prefab" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/SplineExtrusion/RoadExtrusion.prefab" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,10 +80,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="16740">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" />
+      <option name="pid" value="16740" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
@@ -145,16 +144,16 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/Assets/InfiniteTerrain/MapGenerator.cs</url>
-          <line>236</line>
+          <line>185</line>
           <properties documentPath="E:\Project Journey\Project-Journey\Project Journey\Assets\InfiniteTerrain\MapGenerator.cs" containingFunctionPresentation="Method 'GenerateMapData'">
             <startOffsets>
-              <option value="8587" />
+              <option value="6005" />
             </startOffsets>
             <endOffsets>
-              <option value="8685" />
+              <option value="6277" />
             </endOffsets>
           </properties>
-          <option name="timeStamp" value="10" />
+          <option name="timeStamp" value="11" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

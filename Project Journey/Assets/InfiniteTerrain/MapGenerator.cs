@@ -183,7 +183,10 @@ public class MapGenerator : MonoBehaviour
                 //const float halfChunk = ((mapChunkSize + 1) / 2f);
                 //const float constant = 595f / halfChunk;
                 //const float constant = 600f / halfChunk;
-                float3 currentWorldPosition = new Vector3(((x - halfChunk) * constant), meshHeightCurve.Evaluate(currentHeight) * meshHeightMultiplier * 5f, -((y - halfChunk) * constant)); // TODO: Add the center offset
+                float3 currentWorldPosition = new Vector3(
+                     ((x - halfChunk) * constant) + (center.x * 5f), 
+                    meshHeightCurve.Evaluate(currentHeight) * meshHeightMultiplier * 5f, 
+                    -((y - halfChunk) * constant) + (center.y * 5f)); // TODO: Add the center offset. Done :) I.F.
                 //TODO: The above is only off by a tiny ammount (possible 1 unit of "constant" or "constant / 2") I.F.
                 
                 /*if (x > 8 && x < 12 && y > 8 && y < 12)
@@ -244,10 +247,10 @@ public class MapGenerator : MonoBehaviour
                     
                     float heightOfRoad = Mathf.InverseLerp(0, 697.5f, closestPosition.y + debugValue);
 
-                    if (y == 10)
+                    /*if (y == 10)
                     {
                         Debug.Log(heightOfRoad);
-                    }
+                    }*/
 
                     noiseMap[x, y] = heightOfRoad;
 
