@@ -49,7 +49,6 @@ public class MapGenerator : MonoBehaviour
     [SerializeField] public RoadManager roadManager;
 
     [SerializeField] private AnimationCurve roadFalloff;
-    [SerializeField] private AnimationCurve inverseRoadFalloff;
 
     [SerializeField] private float furthestPointForFalloff;
     [SerializeField] private float debugValue;
@@ -57,7 +56,6 @@ public class MapGenerator : MonoBehaviour
     private void Awake()
     {
         falloffMap = FalloffGenerator.GenerateFalloffMap(mapChunkSize);
-        //inverseRoadFalloff = CreateInverseCurve(roadFalloff);
     }
 
     public void DrawMapInEditor()
@@ -150,7 +148,7 @@ public class MapGenerator : MonoBehaviour
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
         
         float3 closestPosition = Vector3.zero;
-        float outFloat = 0f;
+        float outFloat = 0f; // Not used
         //_spline = roadManager.AllRoadSplineListSpline[0];
         float dist = 0f;
 
@@ -166,104 +164,38 @@ public class MapGenerator : MonoBehaviour
                 /*if (useFalloff)
                 {
                     noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - falloffMap[x, y]);
-
                 }*/
                 
                 float currentHeight = noiseMap[x, y];
                 
-                /// Start
+                // Start of road calculation
                 
-                // Find the closest X road subsegments
-                
-                /*float closestDistance = float.MaxValue;
-                int closestRoadIndex = -1;
-                */
-                //float conversionRate = (1190f / ((float)mapChunkSize));
-                //const float constant = 595f / 119.5f;
-                //const float halfChunk = ((mapChunkSize + 1) / 2f);
-                //const float constant = 595f / halfChunk;
-                //const float constant = 600f / halfChunk;
                 float3 currentWorldPosition = new Vector3(
-                     ((x - halfChunk) * constant) + (center.x * 5f), 
+                    ((x - halfChunk) * constant) + (center.x * 5f), 
                     meshHeightCurve.Evaluate(currentHeight) * meshHeightMultiplier * 5f, 
                     -((y - halfChunk) * constant) + (center.y * 5f)); // TODO: Add the center offset. Done :) I.F.
-                //TODO: The above is only off by a tiny ammount (possible 1 unit of "constant" or "constant / 2") I.F.
-                
-                /*if (x > 8 && x < 12 && y > 8 && y < 12)
-                {
-                    Debug.Log(currentWorldPosition);
-                    currentHeight = 1.01f;
-                }*/
-
-                /*if (x == 13 && y == 13)
-                {
-                    Debug.Log(currentWorldPosition);
-                    Debug.Log(meshHeightCurve.Evaluate(currentHeight));
-                }*/
-                
-                /*  
-                for (int i = 0; i < roadManager.AllRoadSplineList.Count - 1; i++)
-                {
-                    Vector2 simplePosition = new Vector2(roadManager.AllRoadSplineListPos[i].x, roadManager.AllRoadSplineListPos[i].z);
-                    
-                    if (simplePosition.sqrMagnitude < closestDistance * closestDistance)
-                    {
-                        closestDistance = simplePosition.magnitude;
-                        closestRoadIndex = i;
-                    }
-                }*/
+                //TODO: The above is only off by a tiny amount (possible 1 unit of "constant" or "constant / 2") I.F.
                 
                 // Sample the selected road segments to find the closest point to a spline. 
 
+                // TODO: Find the nearest 2 splines to the chunk
                 Spline _spline = roadManager.AllRoadSplineListSpline[0];
+                
+                // TODO: Sample both nearest splines to calculate the closest "dist" to road
                 dist = SplineUtility.GetNearestPoint(_spline, currentWorldPosition, out closestPosition, out outFloat, 4, 2);
-                
-                //Debug.Log(dist);
-                /*if ((new Vector3(closestPosition.x, closestPosition.y, closestPosition.z) - new Vector3(currentWorldPosition.x, currentWorldPosition.y, currentWorldPosition.z)).magnitude < 100f)
-                {
-                    noiseMap[x, y] = 0;
-                    //noiseMap[x,y] = Mathf.Lerp(closestPosition.y - 10f, currentHeight , roadFalloff.Evaluate(dist));
-                }*/
-
-                /*if (x == 13 && y == 13)
-                {
-                    Debug.Log(dist);
-                }*/
-                
-                // If "distance" closer than EvaluationCurve(furthest point)
-                    // Use EvaluationCurve to set vertex pos to be somewhere between currentHeight and Evaluation.
                
-                if (dist < 30)
+                if (dist < furthestPointForFalloff)
                 {
-                    //float heightOfRoad = (closestPosition.y / meshHeightMultiplier / 5);
-                    
-                    //float heightOfRoad = inverseRoadFalloff.Evaluate(closestPosition.y / (meshHeightMultiplier * 5f));
-
-                    // // Step 1: Isolate the evaluated value
-                    // float evaluatedValue = currentHeight / (meshHeightMultiplier * 5f);
-                    //
-                    // // Step 2: Apply the inverse curve
-                    // float heightOfRoad = inverseRoadFalloff.Evaluate(evaluatedValue);
-                    
                     float heightOfRoad = Mathf.InverseLerp(0, 697.5f, closestPosition.y + debugValue);
 
-                    /*if (y == 10)
-                    {
-                        Debug.Log(heightOfRoad);
-                    }*/
-
-                    noiseMap[x, y] = heightOfRoad;
-
-                    //noiseMap[x, y] = Mathf.Lerp(currentHeight, heightOfRoad, -lerpValue / 5);
                     //noiseMap[x, y] = heightOfRoad;
+                    
+                    noiseMap[x, y] = Mathf.Lerp(currentHeight, heightOfRoad, roadFalloff.Evaluate(dist));
+                    
                     currentHeight = 1.01f;
-                    //currentHeight = Mathf.Lerp(closestPosition.y, currentHeight, roadFalloff.Evaluate(dist));
-                    //roadManager.AllRoadSplineList[closestRoadIndex].GetComponent<SplineContainer>()[0].spli
                 }
-
-               //currentHeight = 0f;
                 
-                /// End
+                // End of road calculation
                     
                 for (int i = 0; i < regions.Length; i++)
                 {
