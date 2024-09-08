@@ -68,5 +68,8 @@ public class RoadManager : MonoBehaviour
         AllRoadSplineList.Add(currentRoadSegment.transform);
         AllRoadSplineListPos.Add(currentRoadSegment.transform.position);
         AllRoadSplineListSpline.Add(currentRoadSegment.transform.GetComponent<SplineContainer>().Splines[0]);
+        
+        // Add collision to the road after generation is complete
+        MeshCollider currentRoadSegmentMeshCollider = currentRoadSegment.gameObject.AddComponent<MeshCollider>();
     }
 }
