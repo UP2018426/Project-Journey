@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 8631840959663441546}
   - component: {fileID: 254322359932077590}
   - component: {fileID: 167971557092574221}
-  - component: {fileID: 6875827814659137360}
   m_Layer: 0
   m_Name: RoadExtrusion
   m_TagString: Untagged
@@ -237,25 +236,3 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
---- !u!64 &6875827814659137360
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 314556242044513858}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -462981019419857548, guid: 05097ea501878554fb1a10d665d2e828, type: 3}
