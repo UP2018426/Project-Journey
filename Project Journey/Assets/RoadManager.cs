@@ -23,6 +23,10 @@ public class RoadManager : MonoBehaviour
     private void Start()
     {
         CreateRoadSegment(Vector3.zero);
+        CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
+        CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
+        CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
+        CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
     }
 
     void Update()
@@ -66,7 +70,8 @@ public class RoadManager : MonoBehaviour
         previousRoadSegment = currentRoadSegment;
 
         AllRoadSplineList.Add(currentRoadSegment.transform);
-        AllRoadSplineListPos.Add(currentRoadSegment.transform.position);
+        //AllRoadSplineListPos.Add(currentRoadSegment.transform.position);
+        AllRoadSplineListPos.Add(currentRoadSegment.GetLastSplineVector3());
         AllRoadSplineListSpline.Add(currentRoadSegment.transform.GetComponent<SplineContainer>().Splines[0]);
         
         // Add collision to the road after generation is complete

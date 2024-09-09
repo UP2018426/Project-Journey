@@ -147,15 +147,43 @@ public class MapGenerator : MonoBehaviour
 
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
         
-        float3 closestPosition = Vector3.zero;
         float outFloat = 0f; // Not used
         //_spline = roadManager.AllRoadSplineListSpline[0];
-        float dist = 0f;
+        //float dist = float.MaxValue;
 
         //
         const float halfChunk = ((mapChunkSize + 1) / 2f); // TODO: THis needs to change based on chunk LOD
         const float constant = 600f / halfChunk;
         //
+        
+        List<Spline> tempSplines = new List<Spline>(roadManager.AllRoadSplineListSpline);
+        List<Vector3> tempPositions = new List<Vector3>(roadManager.AllRoadSplineListPos);
+        List<Spline> closestSplines = new List<Spline>();
+                
+        Vector3 centerV3 = new Vector3(center.x * 5f, 0, center.y * 5f);
+                
+        // Find the nearest 2 splines to the chunk
+        for (int j = 0; j < 2; j++) // How many road segments should be sampled per chunk
+        {
+            float closestPointSqr = float.MaxValue;
+            int closestRoadIndex = 0;
+                    
+            for (int i = 0; i < tempSplines.Count; i++)
+            {
+                Vector3 offset = tempPositions[i] - centerV3;
+                float sqrLen = offset.sqrMagnitude;
+                if (sqrLen < closestPointSqr)
+                {
+                    closestPointSqr = sqrLen;
+                    closestRoadIndex = i;
+                }
+            }
+                    
+            closestSplines.Add(tempSplines[closestRoadIndex]);
+                    
+            tempPositions.RemoveAt(closestRoadIndex);
+            tempSplines.RemoveAt(closestRoadIndex);
+        }
         
         for (int y = 0; y < mapChunkSize; y++)
         {
@@ -173,23 +201,28 @@ public class MapGenerator : MonoBehaviour
                 float3 currentWorldPosition = new Vector3(
                     ((x - halfChunk) * constant) + (center.x * 5f), 
                     meshHeightCurve.Evaluate(currentHeight) * meshHeightMultiplier * 5f, 
-                    -((y - halfChunk) * constant) + (center.y * 5f)); // TODO: Add the center offset. Done :) I.F.
-                //TODO: The above is only off by a tiny amount (possible 1 unit of "constant" or "constant / 2") I.F.
+                    -((y - halfChunk) * constant) + (center.y * 5f));
                 
-                // Sample the selected road segments to find the closest point to a spline. 
+                float dist = float.MaxValue;
+                float3 closestPosition = Vector3.zero;
+                float3 tempClosestPosition = Vector3.zero;
+                
+                // Sample both nearest splines to calculate the closest "dist" to road
+                foreach (Spline spline in closestSplines)
+                {
+                    float tempDist = SplineUtility.GetNearestPoint(spline, currentWorldPosition, out tempClosestPosition, out outFloat, 4, 2);
 
-                // TODO: Find the nearest 2 splines to the chunk
-                Spline _spline = roadManager.AllRoadSplineListSpline[0];
-                
-                // TODO: Sample both nearest splines to calculate the closest "dist" to road
-                dist = SplineUtility.GetNearestPoint(_spline, currentWorldPosition, out closestPosition, out outFloat, 4, 2);
+                    if (tempDist < dist)
+                    {
+                        dist = tempDist;
+                        closestPosition = tempClosestPosition;
+                    }
+                }
                
                 if (dist < furthestPointForFalloff)
                 {
-                    float heightOfRoad = Mathf.InverseLerp(0, 697.5f, closestPosition.y + debugValue);
+                    float heightOfRoad = Mathf.InverseLerp(0, 697.5f, closestPosition.y);
 
-                    //noiseMap[x, y] = heightOfRoad;
-                    
                     noiseMap[x, y] = Mathf.Lerp(currentHeight, heightOfRoad, roadFalloff.Evaluate(dist));
                     
                     currentHeight = 1.01f;
