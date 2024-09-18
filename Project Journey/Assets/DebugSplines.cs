@@ -22,5 +22,14 @@ public class DebugSplines : MonoBehaviour
         }
 
         
+        if (Input.GetKey(KeyCode.S))
+        {
+            transform.position = new Vector3(transform.position.x,transform.position.y, transform.position.z - speed * Time.deltaTime);
+        }
+
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
     }
 }
