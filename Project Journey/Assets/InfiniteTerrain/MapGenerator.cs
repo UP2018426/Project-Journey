@@ -141,6 +141,30 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
+    private bool RectOverlapCheck(Vector2 firstPosition, Vector2 secondPosition, Vector2 targetPosition)
+    {
+        var rect = Rect.MinMaxRect(firstPosition.x, firstPosition.y, secondPosition.x, secondPosition.y);
+
+        return rect.Contains(targetPosition, true);
+    }
+
+    private bool CheckForOverlap(List<Spline> splineList, Vector2 chunkCornerA, Vector2 chunkCornerB)
+    {
+        for (int i = 0; i < splineList.Count; i++)
+        {
+            for (int j = 0; j < splineList[i].Count; j++)
+            {
+                if (RectOverlapCheck(chunkCornerA, chunkCornerB,
+                        new Vector2(splineList[i][j].Position.x, splineList[i][j].Position.z)))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     MapData GenerateMapData(Vector2 center)
     {
         float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, seed, noiseScale, octaves, persistance, lacunarity, center + offset, normaliseMode);
@@ -153,7 +177,7 @@ public class MapGenerator : MonoBehaviour
 
         //
         const float halfChunk = ((mapChunkSize + 1) / 2f); // TODO: THis needs to change based on chunk LOD
-        const float constant = 600f / halfChunk;
+        const float _scale = 600f / halfChunk;
         //
         
         List<Spline> tempSplines = new List<Spline>(roadManager.AllRoadSplineListSpline);
@@ -185,6 +209,21 @@ public class MapGenerator : MonoBehaviour
             tempSplines.RemoveAt(closestRoadIndex);
         }
         
+        // Check to see if any of the 2 splines point's overlap with this chunk
+        float constantA = (-halfChunk) * _scale;
+        float constantB = (mapChunkSize - halfChunk) * _scale;
+        
+        Vector2 posA = new Vector2(
+            (constantA) + (center.x * _scale),
+            -(constantA) + (center.y * _scale));
+        Vector2 posB = new Vector2(
+            (constantB) + (center.x * _scale),
+            -(constantB) + (center.y * _scale));
+        // THIS IS TOTALLY WRONG. 
+        // NEED TO ADD CHUNKmAX HERE TOO
+        
+        bool bGenerateRoadWithRoad = CheckForOverlap(closestSplines, posA, posB);
+        
         for (int y = 0; y < mapChunkSize; y++)
         {
             for (int x = 0; x < mapChunkSize; x++)
@@ -197,35 +236,38 @@ public class MapGenerator : MonoBehaviour
                 float currentHeight = noiseMap[x, y];
                 
                 // Start of road calculation
-                
-                float3 currentWorldPosition = new Vector3(
-                    ((x - halfChunk) * constant) + (center.x * 5f), 
-                    meshHeightCurve.Evaluate(currentHeight) * meshHeightMultiplier * 5f, 
-                    -((y - halfChunk) * constant) + (center.y * 5f));
-                
-                float dist = float.MaxValue;
-                float3 closestPosition = Vector3.zero;
-                float3 tempClosestPosition = Vector3.zero;
-                
-                // Sample both nearest splines to calculate the closest "dist" to road
-                foreach (Spline spline in closestSplines)
-                {
-                    float tempDist = SplineUtility.GetNearestPoint(spline, currentWorldPosition, out tempClosestPosition, out outFloat, 4, 2);
 
-                    if (tempDist < dist)
-                    {
-                        dist = tempDist;
-                        closestPosition = tempClosestPosition;
-                    }
-                }
-               
-                if (dist < furthestPointForFalloff)
+                if (bGenerateRoadWithRoad)
                 {
-                    float heightOfRoad = Mathf.InverseLerp(0, 697.5f, closestPosition.y);
-
-                    noiseMap[x, y] = Mathf.Lerp(currentHeight, heightOfRoad, roadFalloff.Evaluate(dist));
+                    float3 currentVertexWorldPosition = new Vector3(
+                        ((x - halfChunk) * _scale) + (center.x * 5f), 
+                        meshHeightCurve.Evaluate(currentHeight) * meshHeightMultiplier * 5f, 
+                        -((y - halfChunk) * _scale) + (center.y * 5f));
                     
-                    currentHeight = 1.01f;
+                    float dist = float.MaxValue;
+                    float3 closestPosition = Vector3.zero;
+                    float3 tempClosestPosition = Vector3.zero;
+                    
+                    // Sample both nearest splines to calculate the closest "dist" to road
+                    foreach (Spline spline in closestSplines)
+                    {
+                        float tempDist = SplineUtility.GetNearestPoint(spline, currentVertexWorldPosition, out tempClosestPosition, out outFloat, 4, 2);
+
+                        if (tempDist < dist)
+                        {
+                            dist = tempDist;
+                            closestPosition = tempClosestPosition;
+                        }
+                    }
+                   
+                    if (dist < furthestPointForFalloff)
+                    {
+                        float heightOfRoad = Mathf.InverseLerp(0, 697.5f, closestPosition.y);
+
+                        noiseMap[x, y] = Mathf.Lerp(currentHeight, heightOfRoad, roadFalloff.Evaluate(dist));
+                        
+                        currentHeight = 1.01f;
+                    }
                 }
                 
                 // End of road calculation
