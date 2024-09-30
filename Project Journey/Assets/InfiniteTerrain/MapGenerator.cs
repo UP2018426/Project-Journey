@@ -209,6 +209,7 @@ public class MapGenerator : MonoBehaviour
             tempSplines.RemoveAt(closestRoadIndex);
         }
         
+        /*
         // Check to see if any of the 2 splines point's overlap with this chunk
         float constantA = (-halfChunk) * _scale;
         float constantB = (mapChunkSize - halfChunk) * _scale;
@@ -219,10 +220,8 @@ public class MapGenerator : MonoBehaviour
         Vector2 posB = new Vector2(
             (constantB) + (center.x * _scale),
             -(constantB) + (center.y * _scale));
-        // THIS IS TOTALLY WRONG. 
-        // NEED TO ADD CHUNKmAX HERE TOO
         
-        bool bGenerateRoadWithRoad = CheckForOverlap(closestSplines, posA, posB);
+        bool bGenerateRoadWithRoad = CheckForOverlap(closestSplines, posA, posB);*/
         
         for (int y = 0; y < mapChunkSize; y++)
         {
@@ -237,7 +236,7 @@ public class MapGenerator : MonoBehaviour
                 
                 // Start of road calculation
 
-                if (bGenerateRoadWithRoad)
+                /*if (bGenerateRoadWithRoad)
                 {
                     float3 currentVertexWorldPosition = new Vector3(
                         ((x - halfChunk) * _scale) + (center.x * 5f), 
@@ -268,7 +267,7 @@ public class MapGenerator : MonoBehaviour
                         
                         currentHeight = 1.01f;
                     }
-                }
+                }*/
                 
                 // End of road calculation
                     
@@ -287,33 +286,6 @@ public class MapGenerator : MonoBehaviour
         }
 
         return new MapData(noiseMap, colourMap);
-    }
-    
-    AnimationCurve CreateInverseCurve(AnimationCurve curve)
-    {
-        AnimationCurve invertedCurve = new AnimationCurve();
-        /*Keyframe[] originalKeyframes = curve.keys;
-
-        for (int i = 0; i < originalKeyframes.Length; i++)
-        {
-            invertedKeyframes[i] = new Keyframe(originalKeyframes[i].value, originalKeyframes[i].time);
-        }
-
-        AnimationCurve inverseCurve = new AnimationCurve(invertedKeyframes);
-
-        // Optionally smooth the curve to ensure it behaves well
-        for (int i = 0; i < inverseCurve.length; i++)
-        {
-            inverseCurve.SmoothTangents(i, 0);
-        }*/
-        
-        for (int i = 0; i < curve.length; i++)
-        {
-            Keyframe inverseKey = new Keyframe(curve.keys[i].value, curve.keys[i].time);
-            invertedCurve.AddKey(inverseKey);
-        }
-
-        return invertedCurve;
     }
 
     /*public float GetCurrentHeight(float targetHeight, float meshHeightMultiplier)
