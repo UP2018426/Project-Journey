@@ -92,13 +92,45 @@ public class RoadManager : MonoBehaviour
             
             if (selectedMeshFilter != null)
             {
-                //Convert(selectedMeshFilter, AllRoadSplineListSpline.ToArray());
-                // TODO: Find only the x closest roads. For test purposes, im only using 2 road segments
-                // TODO: Find a way of reading the mesh dictionary to modify "selectedMeshFilter"
-                Spline[] tempSplineArray = new Spline[2] { AllRoadSplineListSpline[0], AllRoadSplineListSpline[1] };
-                Convert(selectedMeshFilter, tempSplineArray);
+                // This finds the nearest couple of splines to the chunk. This affects performance way more than I'd expect :/
+                // TODO: Investigate performance impact of finding closest splines
+                // Note: Burst may not be appropriate here as there'd have to be a conversion to NativeSpline and back again. This may not be worth it.
                 
-                selectedMeshFilter = null;
+                
+                int splinesToSample = 2;
+                
+                List<Spline> tempSplines = new List<Spline>(AllRoadSplineListSpline);
+                List<Vector3> tempPositions = new List<Vector3>(AllRoadSplineListPos);
+                Spline[] closestSplines = new Spline[splinesToSample];
+
+                Vector3 centerV3 = selectedMeshFilter.transform.position;
+                
+                
+                // Find the nearest "splinesToSample" of splines to the chunk
+                for (int j = 0; j < splinesToSample; j++) // How many road segments should be sampled per chunk
+                {
+                    float closestPointSqr = float.MaxValue;
+                    int closestRoadIndex = 0;
+                    
+                    for (int i = 0; i < tempSplines.Count; i++)
+                    {
+                        Vector3 offset = tempPositions[i] - centerV3;
+                        float sqrLen = offset.sqrMagnitude;
+                        if (sqrLen < closestPointSqr)
+                        {
+                            closestPointSqr = sqrLen;
+                            closestRoadIndex = i;
+                        }
+                    }
+                    
+                    closestSplines[j] = tempSplines[closestRoadIndex];
+                    
+                    tempPositions.RemoveAt(closestRoadIndex);
+                    tempSplines.RemoveAt(closestRoadIndex);
+                }
+                
+                Convert(selectedMeshFilter, closestSplines);
+                
             }
         }
 

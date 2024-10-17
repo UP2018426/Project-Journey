@@ -180,35 +180,6 @@ public class MapGenerator : MonoBehaviour
         const float _scale = 600f / halfChunk;
         //
         
-        List<Spline> tempSplines = new List<Spline>(roadManager.AllRoadSplineListSpline);
-        List<Vector3> tempPositions = new List<Vector3>(roadManager.AllRoadSplineListPos);
-        List<Spline> closestSplines = new List<Spline>();
-                
-        Vector3 centerV3 = new Vector3(center.x * 5f, 0, center.y * 5f);
-                
-        // Find the nearest 2 splines to the chunk
-        for (int j = 0; j < 2; j++) // How many road segments should be sampled per chunk
-        {
-            float closestPointSqr = float.MaxValue;
-            int closestRoadIndex = 0;
-                    
-            for (int i = 0; i < tempSplines.Count; i++)
-            {
-                Vector3 offset = tempPositions[i] - centerV3;
-                float sqrLen = offset.sqrMagnitude;
-                if (sqrLen < closestPointSqr)
-                {
-                    closestPointSqr = sqrLen;
-                    closestRoadIndex = i;
-                }
-            }
-                    
-            closestSplines.Add(tempSplines[closestRoadIndex]);
-                    
-            tempPositions.RemoveAt(closestRoadIndex);
-            tempSplines.RemoveAt(closestRoadIndex);
-        }
-        
         /*
         // Check to see if any of the 2 splines point's overlap with this chunk
         float constantA = (-halfChunk) * _scale;
