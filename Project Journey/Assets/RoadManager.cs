@@ -37,12 +37,12 @@ public class RoadManager : MonoBehaviour
         public JobHandle ChunkJobHandle;
         public IJob ChunkJob;
         public MeshFilter ChunkMeshFilter;
-        public NativeArray<float3> ChunkMeshVerts;
+        //public NativeArray<float3> ChunkMeshVerts;
     }
     
     private List<ChunkJobsStruct> inProgressJobs = new List<ChunkJobsStruct>();
     
-    int chunksVisibleInViewDst = Mathf.RoundToInt(400f / chunkSize);
+    //int chunksVisibleInViewDst = Mathf.RoundToInt(400f / chunkSize);
 
     private void Start()
     {
@@ -97,7 +97,7 @@ public class RoadManager : MonoBehaviour
                 // Note: Burst may not be appropriate here as there'd have to be a conversion to NativeSpline and back again. This may not be worth it.
                 
                 
-                int splinesToSample = 2;
+                int splinesToSample = 3;
                 
                 List<Spline> tempSplines = new List<Spline>(AllRoadSplineListSpline);
                 List<Vector3> tempPositions = new List<Vector3>(AllRoadSplineListPos);
@@ -155,12 +155,15 @@ public class RoadManager : MonoBehaviour
                     endTime = Time.realtimeSinceStartup;
                     float resultTime = endTime - startTime;
                     Debug.Log("Time to edit terrain: " + resultTime);
-                    /*meshVertices.Dispose();
-                    for (int j = 0; j < nativeSplines.Length; j++)
+
+                    tempJob.vertices.Dispose();
+                    //meshVertices.Dispose();
+                    
+                    for (int j = 0; j < tempJob.splines.Length; j++)
                     {
-                        nativeSplines[j].Dispose();
+                        tempJob.splines[j].Dispose();
                     }
-                    nativeSplines.Dispose();*/
+                    tempJob.splines.Dispose();
                 }
             }
         }
@@ -172,10 +175,8 @@ public class RoadManager : MonoBehaviour
         
         Debug.Log("0 " + Time.realtimeSinceStartup);
         
-        // TODO: One of the "Allocator.TempJob"'s is kicking up a fuss over a memory leak. Unity is catching and dealing with it but investigate an fix
-        
         // Convert chunkMeshFilter to a NativeArray<float3>
-        NativeArray<float3> meshVertices = new NativeArray<float3>(chunkMeshFilter.sharedMesh.vertices.Length, Allocator.TempJob);
+        NativeArray<float3> meshVertices = new NativeArray<float3>(chunkMeshFilter.sharedMesh.vertices.Length, Allocator.Persistent);
         Debug.Log("1 " + Time.realtimeSinceStartup);
         MeshFilterToFloat3Array(chunkMeshFilter, meshVertices); // TODO: its this
         
@@ -183,11 +184,11 @@ public class RoadManager : MonoBehaviour
 
         if (splines.Length > 0)
         {
-            NativeArray<NativeSpline> nativeSplines = new NativeArray<NativeSpline>(splines.Length, Allocator.TempJob);
+            NativeArray<NativeSpline> nativeSplines = new NativeArray<NativeSpline>(splines.Length, Allocator.Persistent);
             
             for (int i = 0; i < splines.Length; i++)
             {
-                nativeSplines[i] = new NativeSpline(splines[i], Allocator.TempJob);
+                nativeSplines[i] = new NativeSpline(splines[i], Allocator.Persistent);
             }
             
             var job = new GetNearestJob
@@ -203,22 +204,22 @@ public class RoadManager : MonoBehaviour
                 ChunkJobHandle = job.Schedule(),
                 ChunkJob = job,
                 ChunkMeshFilter = chunkMeshFilter,
-                ChunkMeshVerts = meshVertices
+                //ChunkMeshVerts = meshVertices
             };
             inProgressJobs.Add(newJob);
         }
     }
 
-    /*void MeshFilterToFloat3Array(MeshFilter meshFilter, NativeArray<float3> rv)
-    {
-        float startTime = Time.realtimeSinceStartup;
-        int length = meshFilter.sharedMesh.vertices.Length;
-        for (int i = 0; i < length; i++)
-        {
-            rv[i] = meshFilter.sharedMesh.vertices[i];
-        }
-        Debug.Log("Time Taken: " + (Time.realtimeSinceStartup - startTime));
-    }*/
+    // void MeshFilterToFloat3Array(MeshFilter meshFilter, NativeArray<float3> rv)
+    // {
+    //     float startTime = Time.realtimeSinceStartup;
+    //     int length = meshFilter.sharedMesh.vertices.Length;
+    //     for (int i = 0; i < length; i++)
+    //     {
+    //         rv[i] = meshFilter.sharedMesh.vertices[i];
+    //     }
+    //     Debug.Log("Time Taken: " + (Time.realtimeSinceStartup - startTime));
+    // }
     
     void MeshFilterToFloat3Array(MeshFilter meshFilter, NativeArray<float3> rv)
     {
