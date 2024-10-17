@@ -178,7 +178,7 @@ public class RoadManager : MonoBehaviour
         // Convert chunkMeshFilter to a NativeArray<float3>
         NativeArray<float3> meshVertices = new NativeArray<float3>(chunkMeshFilter.sharedMesh.vertices.Length, Allocator.Persistent);
         Debug.Log("1 " + Time.realtimeSinceStartup);
-        MeshFilterToFloat3Array(chunkMeshFilter, meshVertices); // TODO: its this
+        MeshFilterToFloat3Array(chunkMeshFilter, meshVertices);
         
         Debug.Log("2 " + Time.realtimeSinceStartup);
 
@@ -297,7 +297,6 @@ public class RoadManager : MonoBehaviour
                         closestDistance = tempClosestDistance;
                     }
 
-                    // TODO: Pass the correct distance cutoff for this
                     if (closestDistance < distanceCutoff)
                     {
                         // TODO: Bring in AnimationCurve to evaluate road curve
