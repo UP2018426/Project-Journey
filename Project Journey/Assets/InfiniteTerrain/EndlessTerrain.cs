@@ -16,13 +16,15 @@ public class EndlessTerrain : MonoBehaviour {
 	public Transform viewer;
 	public Material mapMaterial;
 
-	public static Vector2 viewerPosition;
+	private static Vector2 viewerPosition;
 	Vector2 viewerPositionOld;
 	static MapGenerator mapGenerator;
 	int chunkSize;
+	public int GetChunkSize() { return chunkSize; }
+
 	int chunksVisibleInViewDst;
 
-	Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>();
+	public Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>();
 	static List<TerrainChunk> terrainChunksVisibleLastUpdate = new List<TerrainChunk>();
 
 	void Start() {
@@ -120,7 +122,10 @@ public class EndlessTerrain : MonoBehaviour {
 			UpdateTerrainChunk ();
 		}
 
-	
+		public MeshFilter GetMeshFilter()
+		{
+			return meshFilter;
+		}
 
 		public void UpdateTerrainChunk() {
 			if (mapDataReceived) {

@@ -23,6 +23,10 @@ public class RoadManager : MonoBehaviour
     [SerializeField] private int roadSegmentSubSegments = 50;
 
     [SerializeField] private MapGenerator mapGenerator; // Used to provide the newly created road segment with the mapGenerator.
+    
+    [SerializeField] private EndlessTerrain endlessTerrain; // Assigned manually
+
+    private static int chunkSize;
 
     [SerializeField] private MeshFilter selectedMeshFilter; // The chunk to be used for road carving.
 
@@ -37,6 +41,8 @@ public class RoadManager : MonoBehaviour
     }
     
     private List<ChunkJobsStruct> inProgressJobs = new List<ChunkJobsStruct>();
+    
+    int chunksVisibleInViewDst = Mathf.RoundToInt(400f / chunkSize);
 
     private void Start()
     {
@@ -45,6 +51,9 @@ public class RoadManager : MonoBehaviour
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
+
+        //chunkSize = endlessTerrain.GetChunkSize();
+        chunkSize = 238;
     }
 
     void Update()
@@ -58,13 +67,38 @@ public class RoadManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             startTime = Time.realtimeSinceStartup;
-            if (selectedMeshFilter)
+
+            Vector2 viewerPosition = new Vector2(endlessTerrain.viewer.position.x, endlessTerrain.viewer.position.z);
+            viewerPosition /= 5f; 
+            int currentChunkCoordX = Mathf.RoundToInt (viewerPosition.x / chunkSize);
+            int currentChunkCoordY = Mathf.RoundToInt (viewerPosition.y / chunkSize);
+
+            //currentChunkCoordX -= chunksVisibleInViewDst;
+            //currentChunkCoordY -= chunksVisibleInViewDst;
+            
+            Vector2 viewedChunkCoord = new Vector2 (currentChunkCoordX, currentChunkCoordY);
+
+            if (endlessTerrain.terrainChunkDictionary.ContainsKey(viewedChunkCoord))
+            {
+                EndlessTerrain.TerrainChunk terrainChunk = endlessTerrain.terrainChunkDictionary[viewedChunkCoord];
+                Debug.Log("chunk found in dict.!");
+
+                MeshFilter terrainChunkMeshFilter = terrainChunk.GetMeshFilter();
+                if (terrainChunkMeshFilter)
+                {
+                    selectedMeshFilter = terrainChunkMeshFilter;
+                }
+            }
+            
+            if (selectedMeshFilter != null)
             {
                 //Convert(selectedMeshFilter, AllRoadSplineListSpline.ToArray());
                 // TODO: Find only the x closest roads. For test purposes, im only using 2 road segments
                 // TODO: Find a way of reading the mesh dictionary to modify "selectedMeshFilter"
                 Spline[] tempSplineArray = new Spline[2] { AllRoadSplineListSpline[0], AllRoadSplineListSpline[1] };
                 Convert(selectedMeshFilter, tempSplineArray);
+                
+                selectedMeshFilter = null;
             }
         }
 
