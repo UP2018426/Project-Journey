@@ -26,11 +26,27 @@ public class RoadManager : MonoBehaviour
     
     [SerializeField] private EndlessTerrain endlessTerrain; // Assigned manually
 
-    private static int chunkSize;
+    private const int chunkSize = 238;
 
     [SerializeField] private MeshFilter selectedMeshFilter; // The chunk to be used for road carving.
 
     public float startTime, endTime; // Debugging variables
+    
+    Dictionary<Vector2, GameObject> roadChunkDictionary = new Dictionary<Vector2, GameObject>();
+    static List<GameObject> roadChunksVisibleLastUpdate = new List<GameObject>();
+
+    [SerializeField]
+    private float roadViewDistance, maxRoadViewDistance;
+    
+    [SerializeField] 
+    private Transform viewer;
+    
+    private Vector2 viewerPosition, viewerPositionOld;
+    
+    const float viewerMoveThresholdForChunkUpdate = 25f;
+    const float sqrViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate * viewerMoveThresholdForChunkUpdate;
+    
+    int chunksVisibleInViewDst;
 
     private struct ChunkJobsStruct
     {
@@ -46,6 +62,8 @@ public class RoadManager : MonoBehaviour
 
     private void Start()
     {
+        chunksVisibleInViewDst = Mathf.RoundToInt(maxRoadViewDistance / chunkSize);
+        
         CreateRoadSegment(Vector3.zero);
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
@@ -53,14 +71,25 @@ public class RoadManager : MonoBehaviour
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
 
         //chunkSize = endlessTerrain.GetChunkSize();
-        chunkSize = 238;
+        UpdateVisibleRoads();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Q))
+        viewerPosition = new Vector2 (viewer.position.x, viewer.position.z);
+
+        if ((viewerPositionOld - viewerPosition).sqrMagnitude > sqrViewerMoveThresholdForChunkUpdate) 
         {
-            CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
+            viewerPositionOld = viewerPosition;
+            UpdateVisibleRoads();
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Q)) // Debugging tool. TODO: remove
+        {
+            viewerPositionOld = viewerPosition;
+            UpdateVisibleRoads();
+            Debug.Log("Q Pressed");
+            //CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
         }
 
         // Testing the performance manually in here. Will eventually be automatic when I've hooked in the dictionary of mesh's
@@ -69,7 +98,6 @@ public class RoadManager : MonoBehaviour
             startTime = Time.realtimeSinceStartup;
 
             Vector2 viewerPosition = new Vector2(endlessTerrain.viewer.position.x, endlessTerrain.viewer.position.z);
-            viewerPosition /= 5f; 
             int currentChunkCoordX = Mathf.RoundToInt (viewerPosition.x / chunkSize);
             int currentChunkCoordY = Mathf.RoundToInt (viewerPosition.y / chunkSize);
 
@@ -168,6 +196,42 @@ public class RoadManager : MonoBehaviour
             }
         }
     }
+    
+    
+    
+    void UpdateVisibleRoads() 
+    {
+        for (int i = 0; i < roadChunksVisibleLastUpdate.Count; i++) 
+        {
+            roadChunksVisibleLastUpdate[i].SetActive(false);
+        }
+        roadChunksVisibleLastUpdate.Clear();
+			
+        int currentChunkCoordX = Mathf.RoundToInt(viewerPosition.x / chunkSize);
+        int currentChunkCoordY = Mathf.RoundToInt(viewerPosition.y / chunkSize);
+
+        for (int yOffset = -chunksVisibleInViewDst; yOffset <= chunksVisibleInViewDst; yOffset++) 
+        {
+            for (int xOffset = -chunksVisibleInViewDst; xOffset <= chunksVisibleInViewDst; xOffset++) 
+            {
+                Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
+
+                if (roadChunkDictionary.ContainsKey(viewedChunkCoord)) 
+                {
+                    if ((viewedChunkCoord - (viewerPosition / chunkSize)).magnitude < roadViewDistance)
+                    {
+                        roadChunksVisibleLastUpdate.Add(roadChunkDictionary[viewedChunkCoord]);
+                        roadChunkDictionary[viewedChunkCoord].SetActive(true);
+                    }
+                } 
+                /*else
+                {
+                    roadChunkDictionary.Add (viewedChunkCoord, new TerrainChunk (viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial));
+                }*/
+
+            }
+        }
+    }
 
     void Convert(MeshFilter chunkMeshFilter, Spline[] splines) // TODO: This is a shitty name
     {
@@ -209,17 +273,6 @@ public class RoadManager : MonoBehaviour
             inProgressJobs.Add(newJob);
         }
     }
-
-    // void MeshFilterToFloat3Array(MeshFilter meshFilter, NativeArray<float3> rv)
-    // {
-    //     float startTime = Time.realtimeSinceStartup;
-    //     int length = meshFilter.sharedMesh.vertices.Length;
-    //     for (int i = 0; i < length; i++)
-    //     {
-    //         rv[i] = meshFilter.sharedMesh.vertices[i];
-    //     }
-    //     Debug.Log("Time Taken: " + (Time.realtimeSinceStartup - startTime));
-    // }
     
     void MeshFilterToFloat3Array(MeshFilter meshFilter, NativeArray<float3> rv)
     {
@@ -311,12 +364,12 @@ public class RoadManager : MonoBehaviour
             }
         }
     }
-
-
+    
     void CreateRoadSegment(Vector3 startPosition)
     {
         //currentRoadSegment = GameObject.Instantiate(RoadGeneratorPrefab, startPosition, quaternion.identity).GetComponent<RoadGenerator>();
-        currentRoadSegment = GameObject.Instantiate(RoadGeneratorPrefab, Vector3.zero, quaternion.identity).GetComponent<RoadGenerator>();
+        GameObject currentRoadSegmentGameObject = GameObject.Instantiate(RoadGeneratorPrefab, Vector3.zero, quaternion.identity);
+        currentRoadSegment = currentRoadSegmentGameObject.GetComponent<RoadGenerator>();
         currentRoadSegment.SetMapGenerator(mapGenerator);
         
         if (previousRoadSegment != null)
@@ -350,7 +403,13 @@ public class RoadManager : MonoBehaviour
         AllRoadSplineListPos.Add(currentRoadSegment.GetLastSplineVector3());
         AllRoadSplineListSpline.Add(currentRoadSegment.transform.GetComponent<SplineContainer>().Splines[0]);
         
-        // Add collision to the road after generation is complete
+        // Add collision to the road after generation is complete // TODO: Look into this
         MeshCollider currentRoadSegmentMeshCollider = currentRoadSegment.gameObject.AddComponent<MeshCollider>();
+        
+        int currentChunkCoordX = Mathf.RoundToInt(startPosition.x / chunkSize);
+        int currentChunkCoordY = Mathf.RoundToInt(startPosition.z / chunkSize);
+        
+        roadChunkDictionary.Add(new Vector2(currentChunkCoordX,currentChunkCoordY), currentRoadSegmentGameObject);
+        roadChunksVisibleLastUpdate.Add(currentRoadSegmentGameObject);
     }
 }
