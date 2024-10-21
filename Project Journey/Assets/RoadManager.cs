@@ -48,6 +48,10 @@ public class RoadManager : MonoBehaviour
     
     int chunksVisibleInViewDst;
 
+    private const float distanceToSpawnNewRoadSegment = 1000f;
+
+    private const float distanceToSpawnNewRoadSegmentSqr = distanceToSpawnNewRoadSegment * distanceToSpawnNewRoadSegment;
+
     private struct ChunkJobsStruct
     {
         public JobHandle ChunkJobHandle;
@@ -81,6 +85,13 @@ public class RoadManager : MonoBehaviour
         if ((viewerPositionOld - viewerPosition).sqrMagnitude > sqrViewerMoveThresholdForChunkUpdate) 
         {
             viewerPositionOld = viewerPosition;
+
+            Vector2 lastRoadPosition = new Vector2(AllRoadSplineListPos[^1].x, AllRoadSplineListPos[^1].z);
+            if ((lastRoadPosition - (viewerPosition * 5)).sqrMagnitude < distanceToSpawnNewRoadSegmentSqr)
+            {
+                CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
+            }
+            
             UpdateVisibleRoads();
         }
         
@@ -98,6 +109,7 @@ public class RoadManager : MonoBehaviour
             startTime = Time.realtimeSinceStartup;
 
             Vector2 viewerPosition = new Vector2(endlessTerrain.viewer.position.x, endlessTerrain.viewer.position.z);
+            viewerPosition /= 5f; 
             int currentChunkCoordX = Mathf.RoundToInt (viewerPosition.x / chunkSize);
             int currentChunkCoordY = Mathf.RoundToInt (viewerPosition.y / chunkSize);
 
