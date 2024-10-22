@@ -169,7 +169,7 @@ public class RoadManager : MonoBehaviour
                     tempSplines.RemoveAt(closestRoadIndex);
                 }
                 
-                Convert(selectedMeshFilter, closestSplines);
+                CarveChunkMeshFilter(selectedMeshFilter, closestSplines);
                 
             }
         }
@@ -245,7 +245,7 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    void Convert(MeshFilter chunkMeshFilter, Spline[] splines) // TODO: This is a shitty name
+    void CarveChunkMeshFilter(MeshFilter chunkMeshFilter, Spline[] splines)
     {
         Matrix4x4 chunkMatrix = chunkMeshFilter.gameObject.GetComponent<Transform>().localToWorldMatrix;
         
