@@ -27,6 +27,8 @@ public class EndlessTerrain : MonoBehaviour {
 	public Dictionary<Vector2, TerrainChunk> terrainChunkDictionary = new Dictionary<Vector2, TerrainChunk>();
 	static List<TerrainChunk> terrainChunksVisibleLastUpdate = new List<TerrainChunk>();
 
+	[SerializeField] private RoadManager roadManager;
+
 	void Start() {
 		mapGenerator = FindObjectOfType<MapGenerator> ();
 
@@ -60,13 +62,26 @@ public class EndlessTerrain : MonoBehaviour {
 			for (int xOffset = -chunksVisibleInViewDst; xOffset <= chunksVisibleInViewDst; xOffset++) {
 				Vector2 viewedChunkCoord = new Vector2 (currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
 
-				if (terrainChunkDictionary.ContainsKey (viewedChunkCoord)) {
-					terrainChunkDictionary [viewedChunkCoord].UpdateTerrainChunk ();
-				} else
+				if (terrainChunkDictionary.ContainsKey (viewedChunkCoord)) 
+				{
+					terrainChunkDictionary[viewedChunkCoord].UpdateTerrainChunk();
+					if (terrainChunksVisibleLastUpdate.Count > 0)
+					{
+						if (terrainChunksVisibleLastUpdate[^1].GetMeshFilter() != null)
+						{
+							if (!terrainChunksVisibleLastUpdate[^1].bHasBeenCarved)
+							{
+								Debug.Log(viewedChunkCoord);
+								roadManager.CarveByCoord();
+								terrainChunksVisibleLastUpdate[^1].bHasBeenCarved = true;
+							}
+						}
+					}
+				} 
+				else
 				{
 					terrainChunkDictionary.Add (viewedChunkCoord, new TerrainChunk (viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial));
 				}
-
 			}
 		}
 	}
@@ -86,6 +101,8 @@ public class EndlessTerrain : MonoBehaviour {
 		MapData mapData;
 		bool mapDataReceived;
 		int previousLODIndex = -1;
+
+		internal bool bHasBeenCarved = false;
 
 		public TerrainChunk(Vector2 coord, int size, LODInfo[] detailLevels, Transform parent, Material material) {
 			this.detailLevels = detailLevels;

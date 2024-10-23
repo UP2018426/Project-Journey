@@ -187,14 +187,7 @@ public class RoadManager : MonoBehaviour
                     
                     inProgressJobs[i].ChunkMeshFilter.sharedMesh.vertices = Float3ArrayToVector3Array(tempJob.vertices);
                     
-                    Debug.Log("job is done!");
-                    
                     inProgressJobs.RemoveAt(i);
-                    
-                    // TODO: Remove this debugging segment
-                    endTime = Time.realtimeSinceStartup;
-                    float resultTime = endTime - startTime;
-                    Debug.Log("Time to edit terrain: " + resultTime);
 
                     tempJob.vertices.Dispose();
                     //meshVertices.Dispose();
@@ -208,8 +201,6 @@ public class RoadManager : MonoBehaviour
             }
         }
     }
-    
-    
     
     void UpdateVisibleRoads() 
     {
@@ -249,14 +240,9 @@ public class RoadManager : MonoBehaviour
     {
         Matrix4x4 chunkMatrix = chunkMeshFilter.gameObject.GetComponent<Transform>().localToWorldMatrix;
         
-        Debug.Log("0 " + Time.realtimeSinceStartup);
-        
         // Convert chunkMeshFilter to a NativeArray<float3>
         NativeArray<float3> meshVertices = new NativeArray<float3>(chunkMeshFilter.sharedMesh.vertices.Length, Allocator.Persistent);
-        Debug.Log("1 " + Time.realtimeSinceStartup);
         MeshFilterToFloat3Array(chunkMeshFilter, meshVertices);
-        
-        Debug.Log("2 " + Time.realtimeSinceStartup);
 
         if (splines.Length > 0)
         {
@@ -285,8 +271,74 @@ public class RoadManager : MonoBehaviour
             inProgressJobs.Add(newJob);
         }
     }
+
+    public void CarveByCoord()
+    {
+        Vector2 viewerPosition = new Vector2(endlessTerrain.viewer.position.x, endlessTerrain.viewer.position.z);
+        viewerPosition /= 5f; 
+        int currentChunkCoordX = Mathf.RoundToInt (viewerPosition.x / chunkSize);
+        int currentChunkCoordY = Mathf.RoundToInt (viewerPosition.y / chunkSize);
+            
+        Vector2 viewedChunkCoord = new Vector2 (currentChunkCoordX, currentChunkCoordY);
+        
+        if (endlessTerrain.terrainChunkDictionary.ContainsKey(viewedChunkCoord))
+        {
+            EndlessTerrain.TerrainChunk terrainChunk = endlessTerrain.terrainChunkDictionary[viewedChunkCoord];
+
+            MeshFilter terrainChunkMeshFilter = terrainChunk.GetMeshFilter();
+            if (terrainChunkMeshFilter.sharedMesh != null)
+            {
+                selectedMeshFilter = terrainChunkMeshFilter;
+            }
+        }
+        
+        if (selectedMeshFilter != null)
+        {
+            if (selectedMeshFilter.sharedMesh.vertexCount > 0)
+            {
+                // This finds the nearest couple of splines to the chunk. This affects performance way more than I'd expect :/
+                // TODO: Investigate performance impact of finding closest splines
+                // Note: Burst may not be appropriate here as there'd have to be a conversion to NativeSpline and back again. This may not be worth it.
+                
+                
+                int splinesToSample = 3;
+                
+                List<Spline> tempSplines = new List<Spline>(AllRoadSplineListSpline);
+                List<Vector3> tempPositions = new List<Vector3>(AllRoadSplineListPos);
+                Spline[] closestSplines = new Spline[splinesToSample];
+
+                Vector3 centerV3 = selectedMeshFilter.transform.position;
+                
+                
+                // Find the nearest "splinesToSample" of splines to the chunk
+                for (int j = 0; j < splinesToSample; j++) // How many road segments should be sampled per chunk
+                {
+                    float closestPointSqr = float.MaxValue;
+                    int closestRoadIndex = 0;
+                    
+                    for (int i = 0; i < tempSplines.Count; i++)
+                    {
+                        Vector3 offset = tempPositions[i] - centerV3;
+                        float sqrLen = offset.sqrMagnitude;
+                        if (sqrLen < closestPointSqr)
+                        {
+                            closestPointSqr = sqrLen;
+                            closestRoadIndex = i;
+                        }
+                    }
+                    
+                    closestSplines[j] = tempSplines[closestRoadIndex];
+                    
+                    tempPositions.RemoveAt(closestRoadIndex);
+                    tempSplines.RemoveAt(closestRoadIndex);
+                }
+                
+                CarveChunkMeshFilter(selectedMeshFilter, closestSplines);
+            }
+        }
+    }
     
-    void MeshFilterToFloat3Array(MeshFilter meshFilter, NativeArray<float3> rv)
+    static void MeshFilterToFloat3Array(MeshFilter meshFilter, NativeArray<float3> rv)
     {
         NativeArray<Vector3> vertices = new NativeArray<Vector3>(meshFilter.sharedMesh.vertices, Allocator.TempJob);
     
