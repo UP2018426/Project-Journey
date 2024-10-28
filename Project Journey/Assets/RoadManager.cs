@@ -416,8 +416,10 @@ public class RoadManager : MonoBehaviour
 
                     if (closestDistance < distanceCutoff)
                     {
-                        // TODO: Bring in AnimationCurve to evaluate road curve
-                        worldSpaceVertex.y = closestPoint.y;
+                        float normalizedDistance = Mathf.Clamp01(closestDistance / distanceCutoff);
+                        float outValue = 1f / (1f + Mathf.Exp(10f * (normalizedDistance - 0.5f)));
+                        
+                        worldSpaceVertex.y = Mathf.Lerp(worldSpaceVertex.y, closestPoint.y, outValue);
 
                         // Convert modified vertex back to localSpace
                         float3 localSpaceVertex = inverseMatrix.MultiplyPoint3x4(worldSpaceVertex);
