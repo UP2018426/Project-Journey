@@ -17,10 +17,10 @@ public class RoadGenerator : MonoBehaviour
     [SerializeField] private AnimationCurve heightCurve;
 
     [SerializeField] private MapGenerator mapGenerator;
-    public void SetMapGenerator(MapGenerator newMapGenerator)
+
+    public MapGenerator MapGenerator
     {
-        // TODO: is this the best way to make a setter??? I.F.
-        mapGenerator = newMapGenerator;
+        set => mapGenerator = value;
     }
 
     public SplineContainer spline;

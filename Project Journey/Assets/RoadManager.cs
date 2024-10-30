@@ -436,7 +436,7 @@ public class RoadManager : MonoBehaviour
         //currentRoadSegment = GameObject.Instantiate(RoadGeneratorPrefab, startPosition, quaternion.identity).GetComponent<RoadGenerator>();
         GameObject currentRoadSegmentGameObject = GameObject.Instantiate(RoadGeneratorPrefab, Vector3.zero, quaternion.identity);
         currentRoadSegment = currentRoadSegmentGameObject.GetComponent<RoadGenerator>();
-        currentRoadSegment.SetMapGenerator(mapGenerator);
+        currentRoadSegment.MapGenerator = mapGenerator;
         
         if (previousRoadSegment != null)
         {
