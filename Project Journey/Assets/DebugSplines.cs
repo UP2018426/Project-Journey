@@ -15,17 +15,17 @@ public class DebugSplines : MonoBehaviour
         {
             Extrusion.GenerateOnFly();
         }
-
-        if (Input.GetKey(KeyCode.W))
-        {
-            transform.position = new Vector3(transform.position.x,transform.position.y, transform.position.z + speed * Time.deltaTime);
-        }
-
         
-        if (Input.GetKey(KeyCode.S))
-        {
-            transform.position = new Vector3(transform.position.x,transform.position.y, transform.position.z - speed * Time.deltaTime);
-        }
+        Vector2 travelDirection = new Vector2();
+
+        if (Input.GetKey(KeyCode.W)) { travelDirection += Vector2.up; }
+        if (Input.GetKey(KeyCode.S)) { travelDirection += Vector2.down; }
+        if (Input.GetKey(KeyCode.A)) { travelDirection += Vector2.left; }
+        if (Input.GetKey(KeyCode.D)) { travelDirection += Vector2.right; }
+        
+        travelDirection = travelDirection.normalized * (speed * Time.deltaTime);
+        
+        transform.position = new Vector3(transform.position.x + travelDirection.x, transform.position.y, transform.position.z + travelDirection.y);
 
         if (Input.GetKey(KeyCode.Escape))
         {
