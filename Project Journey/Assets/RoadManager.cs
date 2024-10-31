@@ -272,15 +272,8 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    public void CarveByCoord()
+    public void CarveByCoord(Vector2 viewedChunkCoord)
     {
-        Vector2 viewerPosition = new Vector2(endlessTerrain.viewer.position.x, endlessTerrain.viewer.position.z);
-        viewerPosition /= 5f; 
-        int currentChunkCoordX = Mathf.RoundToInt (viewerPosition.x / chunkSize);
-        int currentChunkCoordY = Mathf.RoundToInt (viewerPosition.y / chunkSize);
-            
-        Vector2 viewedChunkCoord = new Vector2 (currentChunkCoordX, currentChunkCoordY);
-        
         if (endlessTerrain.terrainChunkDictionary.ContainsKey(viewedChunkCoord))
         {
             EndlessTerrain.TerrainChunk terrainChunk = endlessTerrain.terrainChunkDictionary[viewedChunkCoord];
