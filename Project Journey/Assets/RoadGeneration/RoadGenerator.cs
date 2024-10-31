@@ -105,18 +105,4 @@ public class RoadGenerator : MonoBehaviour
     {
         return spline.Spline[spline.Spline.Count - 1].Position;
     }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(lastPosition, lastPosition + (WanderDistance * WanderDirection));
-        
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(lastPosition + (WanderDistance * WanderDirection), WanderRadius);
-
-        if (mapGenerator)
-        {
-            //Gizmos.DrawSphere(new Vector3(transform.position.x, mapGenerator.GetMapHeightAtPosition(new Vector2(transform.position.x, transform.position.z), heightCurve, 139.5f * 5), transform.position.z), 5f);
-        }
-    }
 }
