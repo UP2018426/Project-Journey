@@ -48,39 +48,52 @@ public class EndlessTerrain : MonoBehaviour {
 		}
 	}
 		
-	void UpdateVisibleChunks() {
-
-		for (int i = 0; i < terrainChunksVisibleLastUpdate.Count; i++) {
-			terrainChunksVisibleLastUpdate [i].SetVisible (false);
+	void UpdateVisibleChunks() 
+	{
+		for (int i = 0; i < terrainChunksVisibleLastUpdate.Count; i++)
+		{
+			terrainChunksVisibleLastUpdate[i].SetVisible(false);
 		}
-		terrainChunksVisibleLastUpdate.Clear ();
+		terrainChunksVisibleLastUpdate.Clear();
 			
-		int currentChunkCoordX = Mathf.RoundToInt (viewerPosition.x / chunkSize);
-		int currentChunkCoordY = Mathf.RoundToInt (viewerPosition.y / chunkSize);
+		int currentChunkCoordX = Mathf.RoundToInt(viewerPosition.x / chunkSize);
+		int currentChunkCoordY = Mathf.RoundToInt(viewerPosition.y / chunkSize);
 
-		for (int yOffset = -chunksVisibleInViewDst; yOffset <= chunksVisibleInViewDst; yOffset++) {
-			for (int xOffset = -chunksVisibleInViewDst; xOffset <= chunksVisibleInViewDst; xOffset++) {
-				Vector2 viewedChunkCoord = new Vector2 (currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
+		for (int yOffset = -chunksVisibleInViewDst; yOffset <= chunksVisibleInViewDst; yOffset++)
+		{
+			for (int xOffset = -chunksVisibleInViewDst; xOffset <= chunksVisibleInViewDst; xOffset++)
+			{
+				Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
 
-				if (terrainChunkDictionary.ContainsKey (viewedChunkCoord)) 
+				if (terrainChunkDictionary.ContainsKey(viewedChunkCoord)) 
 				{
 					terrainChunkDictionary[viewedChunkCoord].UpdateTerrainChunk();
-					if (terrainChunksVisibleLastUpdate.Count > 0)
+
+					if (terrainChunkDictionary[viewedChunkCoord].GetMeshFilter() != null)
+					{
+						if (terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved == false)
+						{
+							roadManager.CarveByCoord(viewedChunkCoord);
+							terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved = true;
+						}
+					}
+					
+					/*if (terrainChunksVisibleLastUpdate.Count > 0)
 					{
 						if (terrainChunksVisibleLastUpdate[^1].GetMeshFilter() != null)
 						{
 							if (!terrainChunksVisibleLastUpdate[^1].bHasBeenCarved)
 							{
-								Debug.Log(viewedChunkCoord);
-								roadManager.CarveByCoord();
+								//Debug.Log(viewedChunkCoord);
+								roadManager.CarveByCoord(viewedChunkCoord);
 								terrainChunksVisibleLastUpdate[^1].bHasBeenCarved = true;
 							}
 						}
-					}
+					}*/
 				} 
 				else
 				{
-					terrainChunkDictionary.Add (viewedChunkCoord, new TerrainChunk (viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial));
+					terrainChunkDictionary.Add(viewedChunkCoord, new TerrainChunk(viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial));
 				}
 			}
 		}
