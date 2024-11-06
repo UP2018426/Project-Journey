@@ -29,24 +29,20 @@ public class RoadManager : MonoBehaviour
     private const int chunkSize = 238;
 
     [SerializeField] private MeshFilter selectedMeshFilter; // The chunk to be used for road carving.
-
-    public float startTime, endTime; // Debugging variables
     
-    Dictionary<Vector2, GameObject> roadChunkDictionary = new Dictionary<Vector2, GameObject>();
-    static List<GameObject> roadChunksVisibleLastUpdate = new List<GameObject>();
+    private Dictionary<Vector2, GameObject> roadChunkDictionary = new Dictionary<Vector2, GameObject>();
+    private static List<GameObject> roadChunksVisibleLastUpdate = new List<GameObject>();
 
-    [SerializeField]
-    private float roadViewDistance, maxRoadViewDistance;
+    [SerializeField] private float roadViewDistance, maxRoadViewDistance;
     
-    [SerializeField] 
-    private Transform viewer;
+    [SerializeField] private Transform viewer;
     
     private Vector2 viewerPosition, viewerPositionOld;
     
-    const float viewerMoveThresholdForChunkUpdate = 25f;
-    const float sqrViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate * viewerMoveThresholdForChunkUpdate;
+    private const float viewerMoveThresholdForChunkUpdate = 25f;
+    private const float sqrViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate * viewerMoveThresholdForChunkUpdate;
     
-    int chunksVisibleInViewDst;
+    private int chunksVisibleInViewDst;
 
     private const float distanceToSpawnNewRoadSegment = 2500f;
 
@@ -57,13 +53,16 @@ public class RoadManager : MonoBehaviour
         public JobHandle ChunkJobHandle;
         public IJob ChunkJob;
         public MeshFilter ChunkMeshFilter;
-        //public NativeArray<float3> ChunkMeshVerts;
     }
     
     private Queue<ChunkJobsStruct> queuedJobs = new Queue<ChunkJobsStruct>();
     private List<ChunkJobsStruct> inProgressJobs = new List<ChunkJobsStruct>();
 
     [SerializeField] private int maxJobs;
+
+#if UNITY_EDITOR
+    [SerializeField] private int currentTotalJobs;
+#endif
 
     private void Start()
     {
@@ -75,7 +74,6 @@ public class RoadManager : MonoBehaviour
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
 
-        //chunkSize = endlessTerrain.GetChunkSize();
         UpdateVisibleRoads();
     }
 
@@ -95,27 +93,22 @@ public class RoadManager : MonoBehaviour
             
             UpdateVisibleRoads();
         }
-        
+
+#if UNITY_EDITOR
         if (Input.GetKeyDown(KeyCode.Q)) // Debugging tool. TODO: remove
         {
             viewerPositionOld = viewerPosition;
             UpdateVisibleRoads();
             Debug.Log("Q Pressed");
-            //CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
         }
 
         // Testing the performance manually in here. Will eventually be automatic when I've hooked in the dictionary of mesh's
         if (Input.GetKeyDown(KeyCode.E))
         {
-            startTime = Time.realtimeSinceStartup;
-
             Vector2 viewerPosition = new Vector2(endlessTerrain.viewer.position.x, endlessTerrain.viewer.position.z);
             viewerPosition /= 5f; 
             int currentChunkCoordX = Mathf.RoundToInt (viewerPosition.x / chunkSize);
             int currentChunkCoordY = Mathf.RoundToInt (viewerPosition.y / chunkSize);
-
-            //currentChunkCoordX -= chunksVisibleInViewDst;
-            //currentChunkCoordY -= chunksVisibleInViewDst;
             
             Vector2 viewedChunkCoord = new Vector2 (currentChunkCoordX, currentChunkCoordY);
 
@@ -136,7 +129,6 @@ public class RoadManager : MonoBehaviour
                 // This finds the nearest couple of splines to the chunk. This affects performance way more than I'd expect :/
                 // TODO: Investigate performance impact of finding closest splines
                 // Note: Burst may not be appropriate here as there'd have to be a conversion to NativeSpline and back again. This may not be worth it.
-                
                 
                 int splinesToSample = 3;
                 
@@ -174,6 +166,7 @@ public class RoadManager : MonoBehaviour
                 
             }
         }
+#endif
 
         // Run through all active jobs and check if any are ready to finish up (there may be a better way to do this but I havnt found it yet...) 
         if (inProgressJobs.Count > 0)
@@ -217,6 +210,10 @@ public class RoadManager : MonoBehaviour
                 inProgressJobs.Add(jobToStart);
             }
         }
+
+#if UNITY_EDITOR
+        currentTotalJobs = inProgressJobs.Count + queuedJobs.Count;
+#endif
     }
     
     void UpdateVisibleRoads() 
@@ -243,12 +240,7 @@ public class RoadManager : MonoBehaviour
                         roadChunksVisibleLastUpdate.Add(roadChunkDictionary[viewedChunkCoord]);
                         roadChunkDictionary[viewedChunkCoord].SetActive(true);
                     }
-                } 
-                /*else
-                {
-                    roadChunkDictionary.Add (viewedChunkCoord, new TerrainChunk (viewedChunkCoord, chunkSize, detailLevels, transform, mapMaterial));
-                }*/
-
+                }
             }
         }
     }
@@ -307,7 +299,6 @@ public class RoadManager : MonoBehaviour
                 // This finds the nearest couple of splines to the chunk. This affects performance way more than I'd expect :/
                 // TODO: Investigate performance impact of finding closest splines
                 // Note: Burst may not be appropriate here as there'd have to be a conversion to NativeSpline and back again. This may not be worth it.
-                
                 
                 int splinesToSample = 3;
                 
@@ -441,8 +432,7 @@ public class RoadManager : MonoBehaviour
     
     void CreateRoadSegment(Vector3 startPosition)
     {
-        //currentRoadSegment = GameObject.Instantiate(RoadGeneratorPrefab, startPosition, quaternion.identity).GetComponent<RoadGenerator>();
-        GameObject currentRoadSegmentGameObject = GameObject.Instantiate(RoadGeneratorPrefab, Vector3.zero, quaternion.identity);
+        GameObject currentRoadSegmentGameObject = GameObject.Instantiate(RoadGeneratorPrefab, Vector3.zero, quaternion.identity, this.transform);
         currentRoadSegment = currentRoadSegmentGameObject.GetComponent<RoadGenerator>();
         currentRoadSegment.MapGenerator = mapGenerator;
         
@@ -459,7 +449,6 @@ public class RoadManager : MonoBehaviour
             currentRoadSegment.spline.Spline.Add(new BezierKnot(lastPos));
         }
         
-        //currentRoadSegment.SetLastPosition(Vector3.zero);
         currentRoadSegment.SetLastPosition(startPosition);
         
         for (int i = 0; i < roadSegmentSubSegments; i++)
@@ -472,7 +461,6 @@ public class RoadManager : MonoBehaviour
         previousRoadSegment = currentRoadSegment;
 
         AllRoadSplineList.Add(currentRoadSegment.transform);
-        //AllRoadSplineListPos.Add(currentRoadSegment.transform.position);
         AllRoadSplineListPos.Add(currentRoadSegment.GetLastSplineVector3());
         AllRoadSplineListSpline.Add(currentRoadSegment.transform.GetComponent<SplineContainer>().Splines[0]);
         
