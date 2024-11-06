@@ -60,9 +60,10 @@ public class RoadManager : MonoBehaviour
         //public NativeArray<float3> ChunkMeshVerts;
     }
     
+    private Queue<ChunkJobsStruct> queuedJobs = new Queue<ChunkJobsStruct>();
     private List<ChunkJobsStruct> inProgressJobs = new List<ChunkJobsStruct>();
-    
-    //int chunksVisibleInViewDst = Mathf.RoundToInt(400f / chunkSize);
+
+    [SerializeField] private int maxJobs;
 
     private void Start()
     {
@@ -200,6 +201,22 @@ public class RoadManager : MonoBehaviour
                 }
             }
         }
+        
+        // Add jobs from the queue if needed
+        if (inProgressJobs.Count < maxJobs && queuedJobs.Count > 0)
+        {
+            int numberOfJobsToAdd = Mathf.Min(maxJobs - inProgressJobs.Count, queuedJobs.Count);
+
+            for (int i = 0; i < numberOfJobsToAdd; i++)
+            {
+                ChunkJobsStruct jobToStart = queuedJobs.Dequeue();
+
+                GetNearestJob job = (GetNearestJob)jobToStart.ChunkJob;
+                jobToStart.ChunkJobHandle = job.Schedule();
+                
+                inProgressJobs.Add(jobToStart);
+            }
+        }
     }
     
     void UpdateVisibleRoads() 
@@ -263,12 +280,10 @@ public class RoadManager : MonoBehaviour
             
             ChunkJobsStruct newJob = new ChunkJobsStruct
             {
-                ChunkJobHandle = job.Schedule(),
                 ChunkJob = job,
                 ChunkMeshFilter = chunkMeshFilter,
-                //ChunkMeshVerts = meshVertices
             };
-            inProgressJobs.Add(newJob);
+            queuedJobs.Enqueue(newJob);
         }
     }
 
