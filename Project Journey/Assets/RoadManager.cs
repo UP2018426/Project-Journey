@@ -48,7 +48,7 @@ public class RoadManager : MonoBehaviour
     
     int chunksVisibleInViewDst;
 
-    private const float distanceToSpawnNewRoadSegment = 1000f;
+    private const float distanceToSpawnNewRoadSegment = 2500f;
 
     private const float distanceToSpawnNewRoadSegmentSqr = distanceToSpawnNewRoadSegment * distanceToSpawnNewRoadSegment;
 
@@ -83,15 +83,15 @@ public class RoadManager : MonoBehaviour
     {
         viewerPosition = new Vector2 (viewer.position.x, viewer.position.z);
 
+        Vector2 lastRoadPosition = new Vector2(AllRoadSplineListPos[^1].x, AllRoadSplineListPos[^1].z);
+        if ((lastRoadPosition - viewerPosition).sqrMagnitude < distanceToSpawnNewRoadSegmentSqr)
+        {
+            CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
+        }
+        
         if ((viewerPositionOld - viewerPosition).sqrMagnitude > sqrViewerMoveThresholdForChunkUpdate) 
         {
             viewerPositionOld = viewerPosition;
-
-            Vector2 lastRoadPosition = new Vector2(AllRoadSplineListPos[^1].x, AllRoadSplineListPos[^1].z);
-            if ((lastRoadPosition - (viewerPosition * 5)).sqrMagnitude < distanceToSpawnNewRoadSegmentSqr)
-            {
-                CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
-            }
             
             UpdateVisibleRoads();
         }
@@ -458,7 +458,6 @@ public class RoadManager : MonoBehaviour
             currentRoadSegment.spline.Spline.Add(new BezierKnot(secondToLastPos));
             currentRoadSegment.spline.Spline.Add(new BezierKnot(lastPos));
         }
-        
         
         //currentRoadSegment.SetLastPosition(Vector3.zero);
         currentRoadSegment.SetLastPosition(startPosition);
