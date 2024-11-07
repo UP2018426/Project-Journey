@@ -89,22 +89,43 @@ public class RoadManager : MonoBehaviour
             CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
         }
         
-        if ((viewerPositionOld - viewerPosition).sqrMagnitude > sqrViewerMoveThresholdForChunkUpdate) 
-        {
-            viewerPositionOld = viewerPosition;
-            
-            UpdateVisibleRoads();
-        }
-        
         if (startingAreaCalculated == false)
         {
-            startingAreaCalculated = IsStartingAreaCalculated();
+            //startingAreaCalculated = IsStartingAreaCalculated();
+            
+            // TODO: This is a temporary fix and needs to be investigated fully.
+            // The "endlessTerrain.UpdateVisibleChunks();" is happening before all chunks exist and therefore some
+            // terrain chunks may have a carve job start before any mesh data.
+            // This results in a terrain chunk being marked as carved without any changes
+
+            int childCount = 0; 
+            for (int i = 0; i < endlessTerrain.gameObject.transform.childCount; i++)
+            {
+                if (endlessTerrain.gameObject.transform.GetChild(i).gameObject.activeSelf == false)
+                {
+                    break;
+                }
+                
+                childCount++;
+            }
+
+            if (childCount == endlessTerrain.gameObject.transform.childCount)
+            {
+                startingAreaCalculated = true;
+            }
 
             if (startingAreaCalculated == true)
             {
                 endlessTerrain.UpdateVisibleChunks();
                 Debug.Log("Starting area ready");
             }
+        }
+        
+        if ((viewerPositionOld - viewerPosition).sqrMagnitude > sqrViewerMoveThresholdForChunkUpdate) 
+        {
+            viewerPositionOld = viewerPosition;
+            
+            UpdateVisibleRoads();
         }
 
 #if UNITY_EDITOR
@@ -223,7 +244,7 @@ public class RoadManager : MonoBehaviour
                 inProgressJobs.Add(jobToStart);
             }
         }
-
+        
 #if UNITY_EDITOR
         currentTotalJobs = inProgressJobs.Count + queuedJobs.Count;
 #endif
@@ -242,9 +263,12 @@ public class RoadManager : MonoBehaviour
 
                 if (endlessTerrain.terrainChunkDictionary.ContainsKey(viewedChunkCoord))
                 {
-                    if (endlessTerrain.terrainChunkDictionary[viewedChunkCoord].IsVisible() == false)
+                    if (endlessTerrain.terrainChunkDictionary[viewedChunkCoord].IsVisible() == true)
                     {
-                        return false;
+                        if (endlessTerrain.terrainChunkDictionary[viewedChunkCoord].GetMeshFilter().mesh.vertexCount <= 0)
+                        {
+                            return false;
+                        }
                     }
                 }
                 else
