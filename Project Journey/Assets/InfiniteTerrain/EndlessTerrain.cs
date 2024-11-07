@@ -6,7 +6,7 @@ using UnityEngine.Splines;
 public class EndlessTerrain : MonoBehaviour 
 {
 	// If scale is larger, remember that more road segments need to be sampled per chunk. I.F.
-	internal const float scale = 10f;
+	internal const float scale = 5f;
 
 	const float viewerMoveThresholdForChunkUpdate = 25f;
 	const float sqrViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate * viewerMoveThresholdForChunkUpdate;
@@ -49,7 +49,7 @@ public class EndlessTerrain : MonoBehaviour
 		}
 	}
 		
-	void UpdateVisibleChunks() 
+	public void UpdateVisibleChunks() 
 	{
 		for (int i = 0; i < terrainChunksVisibleLastUpdate.Count; i++)
 		{

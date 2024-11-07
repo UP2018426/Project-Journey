@@ -64,6 +64,8 @@ public class RoadManager : MonoBehaviour
     [SerializeField] private int currentTotalJobs;
 #endif
 
+    private bool startingAreaCalculated = false;
+
     private void Start()
     {
         chunksVisibleInViewDst = Mathf.RoundToInt(maxRoadViewDistance / chunkSize);
@@ -92,6 +94,17 @@ public class RoadManager : MonoBehaviour
             viewerPositionOld = viewerPosition;
             
             UpdateVisibleRoads();
+        }
+        
+        if (startingAreaCalculated == false)
+        {
+            startingAreaCalculated = IsStartingAreaCalculated();
+
+            if (startingAreaCalculated == true)
+            {
+                endlessTerrain.UpdateVisibleChunks();
+                Debug.Log("Starting area ready");
+            }
         }
 
 #if UNITY_EDITOR
@@ -214,6 +227,33 @@ public class RoadManager : MonoBehaviour
 #if UNITY_EDITOR
         currentTotalJobs = inProgressJobs.Count + queuedJobs.Count;
 #endif
+    }
+
+    bool IsStartingAreaCalculated()
+    {
+        int currentChunkCoordX = Mathf.RoundToInt(viewerPosition.x / chunkSize);
+        int currentChunkCoordY = Mathf.RoundToInt(viewerPosition.y / chunkSize);
+
+        for (int yOffset = -1; yOffset <= 1; yOffset++)
+        {
+            for (int xOffset = -1; xOffset <= 1; xOffset++)
+            {
+                Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
+
+                if (endlessTerrain.terrainChunkDictionary.ContainsKey(viewedChunkCoord))
+                {
+                    if (endlessTerrain.terrainChunkDictionary[viewedChunkCoord].IsVisible() == false)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     void UpdateVisibleRoads() 
