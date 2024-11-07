@@ -106,7 +106,7 @@ public class RoadManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E))
         {
             Vector2 viewerPosition = new Vector2(endlessTerrain.viewer.position.x, endlessTerrain.viewer.position.z);
-            viewerPosition /= 5f; 
+            viewerPosition /= EndlessTerrain.scale;
             int currentChunkCoordX = Mathf.RoundToInt (viewerPosition.x / chunkSize);
             int currentChunkCoordY = Mathf.RoundToInt (viewerPosition.y / chunkSize);
             

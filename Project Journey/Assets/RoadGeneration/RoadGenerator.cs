@@ -73,7 +73,7 @@ public class RoadGenerator : MonoBehaviour
         Vector3 direction = new Vector3(randomCircle.x, 0, randomCircle.y) * WanderRadius;
         
         float roadHeight = mapGenerator.GetMapHeightAtPosition(new Vector2(center.x + direction.x, center.z + direction.z),
-            heightCurve, 139.5f * 5);
+            heightCurve, 139.5f * EndlessTerrain.scale);
         
         center.y = roadHeight;
 

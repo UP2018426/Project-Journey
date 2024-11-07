@@ -244,7 +244,7 @@ public class MapGenerator : MonoBehaviour
 
     public float GetMapHeightAtPosition(Vector2 center, AnimationCurve heightCurve, float heightMultiplier) // I.F.
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(1, 1, seed, noiseScale, octaves, persistance, lacunarity, (center / 5) + offset, normaliseMode);
+        float[,] noiseMap = Noise.GenerateNoiseMap(1, 1, seed, noiseScale, octaves, persistance, lacunarity, (center / EndlessTerrain.scale) + offset, normaliseMode);
         
         float height = heightCurve.Evaluate(noiseMap[0, 0]) * heightMultiplier;
         

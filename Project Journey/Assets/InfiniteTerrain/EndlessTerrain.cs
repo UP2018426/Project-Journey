@@ -3,15 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Splines;
 
-public class EndlessTerrain : MonoBehaviour {
-
-	const float scale = 5f;
+public class EndlessTerrain : MonoBehaviour 
+{
+	// If scale is larger, remember that more road segments need to be sampled per chunk. I.F.
+	internal const float scale = 10f;
 
 	const float viewerMoveThresholdForChunkUpdate = 25f;
 	const float sqrViewerMoveThresholdForChunkUpdate = viewerMoveThresholdForChunkUpdate * viewerMoveThresholdForChunkUpdate;
 
 	public LODInfo[] detailLevels;
-	public static float maxViewDst;
+	private static float maxViewDst;
 
 	public Transform viewer;
 	public Material mapMaterial;
