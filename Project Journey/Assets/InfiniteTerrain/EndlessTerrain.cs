@@ -72,10 +72,13 @@ public class EndlessTerrain : MonoBehaviour
 
 					if (terrainChunkDictionary[viewedChunkCoord].GetMeshFilter() != null)
 					{
-						if (terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved == false)
+						if (terrainChunkDictionary[viewedChunkCoord].GetCurrentLOD() == 0)
 						{
-							roadManager.CarveByCoord(viewedChunkCoord);
-							terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved = true;
+							if (terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved == false)
+							{
+								roadManager.CarveByCoord(viewedChunkCoord);
+								terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved = true;
+							}
 						}
 					}
 					
@@ -199,6 +202,30 @@ public class EndlessTerrain : MonoBehaviour
 			return meshObject.activeSelf;
 		}
 
+		public int GetCurrentLOD()
+		{
+			float viewerDstFromNearestEdge = Mathf.Sqrt (bounds.SqrDistance (viewerPosition));
+			bool visible = viewerDstFromNearestEdge <= maxViewDst;
+
+			int lodIndex = 0;
+			
+			if (visible)
+			{
+				for (int i = 0; i < detailLevels.Length - 1; i++)
+				{
+					if (viewerDstFromNearestEdge > detailLevels[i].visibleDstThreshold)
+					{
+						lodIndex = i + 1;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+
+			return lodIndex;
+		}
 	}
 
 	class LODMesh {

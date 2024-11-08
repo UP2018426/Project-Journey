@@ -372,6 +372,10 @@ public class RoadManager : MonoBehaviour
 
                 Vector3 centerV3 = selectedMeshFilter.transform.position;
                 
+                if (tempSplines.Count < splinesToSample)
+                {
+                    return;
+                }
                 
                 // Find the nearest "splinesToSample" of splines to the chunk
                 for (int j = 0; j < splinesToSample; j++) // How many road segments should be sampled per chunk
@@ -389,7 +393,7 @@ public class RoadManager : MonoBehaviour
                             closestRoadIndex = i;
                         }
                     }
-                    
+
                     closestSplines[j] = tempSplines[closestRoadIndex];
                     
                     tempPositions.RemoveAt(closestRoadIndex);
