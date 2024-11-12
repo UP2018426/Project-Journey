@@ -323,7 +323,13 @@ public class RoadManager : MonoBehaviour
             
             for (int i = 0; i < splines.Length; i++)
             {
-                nativeSplines[i] = new NativeSpline(splines[i], Allocator.Persistent);
+                Spline modifiedSpline = new Spline(splines[i]);
+                if (modifiedSpline.Count > 0)
+                {
+                    modifiedSpline.RemoveAt(0);
+                }
+                
+                nativeSplines[i] = new NativeSpline(modifiedSpline, Allocator.Persistent);
             }
             
             var job = new GetNearestJob
