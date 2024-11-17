@@ -71,24 +71,10 @@ public class RoadManager : MonoBehaviour
         chunksVisibleInViewDst = Mathf.RoundToInt(maxRoadViewDistance / chunkSize);
         
         CreateRoadSegment(Vector3.zero);
-        previousRoadSegment.spline.Spline.RemoveAt(currentRoadSegment.spline.Spline.Count - 1);
-        previousRoadSegment.spline.Spline.RemoveAt(0);
-        
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
-        previousRoadSegment.spline.Spline.RemoveAt(currentRoadSegment.spline.Spline.Count - 1);
-        previousRoadSegment.spline.Spline.RemoveAt(0);
-        
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
-        previousRoadSegment.spline.Spline.RemoveAt(currentRoadSegment.spline.Spline.Count - 1);
-        previousRoadSegment.spline.Spline.RemoveAt(0);
-        
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
-        previousRoadSegment.spline.Spline.RemoveAt(currentRoadSegment.spline.Spline.Count - 1);
-        previousRoadSegment.spline.Spline.RemoveAt(0);
-        
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
-        previousRoadSegment.spline.Spline.RemoveAt(currentRoadSegment.spline.Spline.Count - 1);
-        previousRoadSegment.spline.Spline.RemoveAt(0);
 
         UpdateVisibleRoads();
     }
@@ -101,11 +87,6 @@ public class RoadManager : MonoBehaviour
         if ((lastRoadPosition - viewerPosition).sqrMagnitude < distanceToSpawnNewRoadSegmentSqr)
         {
             CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
-            // If the following 2 lines are included in the function above, the road mesh generation will be wrong
-            // (even if it's the last thing in the function!)
-            // TODO: Tidy this up!
-            previousRoadSegment.spline.Spline.RemoveAt(currentRoadSegment.spline.Spline.Count - 1);
-            previousRoadSegment.spline.Spline.RemoveAt(0);
         }
         
         if (startingAreaCalculated == false)
@@ -345,6 +326,7 @@ public class RoadManager : MonoBehaviour
                 Spline modifiedSpline = new Spline(splines[i]);
                 if (modifiedSpline.Count > 0)
                 {
+                    modifiedSpline.RemoveAt(modifiedSpline.Count - 1);
                     modifiedSpline.RemoveAt(0);
                 }
                 
@@ -569,11 +551,5 @@ public class RoadManager : MonoBehaviour
         
         roadChunkDictionary.Add(new Vector2(currentChunkCoordX,currentChunkCoordY), currentRoadSegmentGameObject);
         roadChunksVisibleLastUpdate.Add(currentRoadSegmentGameObject);
-        
-        // Remove first and last knot
-        //currentRoadSegment.spline[1].Resize(0);
-        //currentRoadSegment.spline[2].Resize(0);
-        //previousRoadSegment.spline.Spline.RemoveAt(currentRoadSegment.spline.Spline.Count - 1);
-        //previousRoadSegment.spline.Spline.RemoveAt(0);
     }
 }

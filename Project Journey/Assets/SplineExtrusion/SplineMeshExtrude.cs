@@ -21,10 +21,6 @@ public class SplineMeshExtrude : MonoBehaviour
     [SerializeField]
     private bool useWorldUp = true;
 
-    private MeshFilter meshFilter;
-    private SplineContainer splineContainer;
-    private Spline spline;
-
     private Vector3[] templateVertices;
 
     private void Awake()
@@ -44,25 +40,20 @@ public class SplineMeshExtrude : MonoBehaviour
 
     public void GenerateMeshAlongSpline() 
     {
-        //meshFilter = null;
-        //splineContainer = null;
-        if (meshFilter != null)
-        {
-            meshFilter.mesh = extrusionTemplateMesh;
-        }
+        MeshFilter meshFilter = null;
         
         meshFilter = gameObject.GetComponent<MeshFilter>();
         if (!meshFilter)
             Debug.LogError($"SplineMeshExtrude: Awake: Gameobject {gameObject.name} does not have an attached mesh filter.");
 
-        splineContainer = gameObject.GetComponent<SplineContainer>();
-        spline = splineContainer.Spline;
+        SplineContainer splineContainer = gameObject.GetComponent<SplineContainer>();
+        Spline spline = splineContainer.Spline;
 
-        Mesh generatedMesh = GenerateMesh();
+        Mesh generatedMesh = GenerateMesh(spline, splineContainer);
         meshFilter.mesh = generatedMesh;
     }
 
-    private Mesh GenerateMesh()
+    private Mesh GenerateMesh(Spline spline, SplineContainer splineContainer)
     {
         Mesh mesh = new Mesh();
         bool success = SplineUtil.SampleSplineInterval(spline, transform, extrusionInterval, out Vector3[] positions, out Vector3[] tangents, out Vector3[] upVectors);
