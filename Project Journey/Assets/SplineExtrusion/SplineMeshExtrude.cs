@@ -42,7 +42,7 @@ public class SplineMeshExtrude : MonoBehaviour
         */
     }
 
-    public void GenerateOnFly() 
+    public void GenerateMeshAlongSpline() 
     {
         //meshFilter = null;
         //splineContainer = null;

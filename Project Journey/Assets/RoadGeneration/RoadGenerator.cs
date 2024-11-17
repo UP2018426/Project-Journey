@@ -40,6 +40,7 @@ public class RoadGenerator : MonoBehaviour
 
     private void Update()
     {
+#if UNITY_EDITOR
         /*if (Input.GetKeyDown(KeyCode.W))
         {
             GenerateRoadSegment(lastPosition + Vector3.forward);    
@@ -59,8 +60,9 @@ public class RoadGenerator : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            GenerateRoadSegment(DetermineNextRoadPosition());
+            GenerateRoadSegment();
         }
+#endif
     }
 
     Vector3 DetermineNextRoadPosition()
@@ -79,16 +81,6 @@ public class RoadGenerator : MonoBehaviour
 
         return center + direction;
     }
-
-    // ReSharper disable Unity.PerformanceAnalysis
-    public void GenerateRoadSegment(Vector3 targetPosition)
-    {
-        spline.Spline.Add(new BezierKnot(targetPosition));
-
-        spline.Spline.SetTangentMode(TangentMode.AutoSmooth);
-
-        lastPosition = targetPosition;
-    }
     
     public void GenerateRoadSegment()
     {
@@ -96,7 +88,7 @@ public class RoadGenerator : MonoBehaviour
         
         spline.Spline.Add(new BezierKnot(targetPosition));
 
-        spline.Spline.SetTangentMode(TangentMode.AutoSmooth);
+        //spline.Spline.SetTangentMode(TangentMode.AutoSmooth);
 
         lastPosition = targetPosition;
     }

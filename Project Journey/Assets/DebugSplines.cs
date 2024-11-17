@@ -13,7 +13,7 @@ public class DebugSplines : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            Extrusion.GenerateOnFly();
+            Extrusion.GenerateMeshAlongSpline();
         }
         
         Vector2 travelDirection = new Vector2();
