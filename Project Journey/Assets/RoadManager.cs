@@ -77,6 +77,10 @@ public class RoadManager : MonoBehaviour
         CreateRoadSegment(previousRoadSegment.GetLastSplineVector3());
 
         UpdateVisibleRoads();
+
+#if UNITY_STANDALONE_WIN
+        maxJobs = Mathf.Max(SystemInfo.processorCount - 2, 1);
+#endif
     }
 
     void Update()
@@ -99,21 +103,32 @@ public class RoadManager : MonoBehaviour
             // This results in a terrain chunk being marked as carved without any changes
 
             int childCount = 0; 
-            for (int i = 0; i < endlessTerrain.gameObject.transform.childCount; i++)
+            for (int x = -1; x <= 1; x++)
             {
-                if (endlessTerrain.gameObject.transform.GetChild(i).gameObject.activeSelf == false)
+                for (int y = -1; y <= 1; y++)
                 {
-                    break;
+                    if (endlessTerrain.terrainChunkDictionary.ContainsKey(new Vector2(x,y)))
+                    {
+                        if (endlessTerrain.terrainChunkDictionary[new Vector2(x, y)].IsVisible())
+                        {
+                            MeshFilter tempMesh = endlessTerrain.terrainChunkDictionary[new Vector2(x, y)].GetMeshFilter();
+                            if (tempMesh != null)
+                            {
+                                if (tempMesh.mesh.vertexCount > 0)
+                                {
+                                    childCount++;
+                                }
+                            }
+                        }
+                    }
                 }
-                
-                childCount++;
             }
-
-            if (childCount == endlessTerrain.gameObject.transform.childCount)
+            
+            if (childCount >= 9)
             {
                 startingAreaCalculated = true;
             }
-
+            
             if (startingAreaCalculated == true)
             {
                 endlessTerrain.UpdateVisibleChunks();
@@ -164,7 +179,7 @@ public class RoadManager : MonoBehaviour
                 // TODO: Investigate performance impact of finding closest splines
                 // Note: Burst may not be appropriate here as there'd have to be a conversion to NativeSpline and back again. This may not be worth it.
                 
-                int splinesToSample = 3;
+                int splinesToSample = 4;
                 
                 List<Spline> tempSplines = new List<Spline>(AllRoadSplineListSpline);
                 List<Vector3> tempPositions = new List<Vector3>(AllRoadSplineListPos);
@@ -248,36 +263,6 @@ public class RoadManager : MonoBehaviour
 #if UNITY_EDITOR
         currentTotalJobs = inProgressJobs.Count + queuedJobs.Count;
 #endif
-    }
-
-    bool IsStartingAreaCalculated()
-    {
-        int currentChunkCoordX = Mathf.RoundToInt(viewerPosition.x / chunkSize);
-        int currentChunkCoordY = Mathf.RoundToInt(viewerPosition.y / chunkSize);
-
-        for (int yOffset = -1; yOffset <= 1; yOffset++)
-        {
-            for (int xOffset = -1; xOffset <= 1; xOffset++)
-            {
-                Vector2 viewedChunkCoord = new Vector2(currentChunkCoordX + xOffset, currentChunkCoordY + yOffset);
-
-                if (endlessTerrain.terrainChunkDictionary.ContainsKey(viewedChunkCoord))
-                {
-                    if (endlessTerrain.terrainChunkDictionary[viewedChunkCoord].IsVisible() == true)
-                    {
-                        if (endlessTerrain.terrainChunkDictionary[viewedChunkCoord].GetMeshFilter().mesh.vertexCount <= 0)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
     
     void UpdateVisibleRoads() 

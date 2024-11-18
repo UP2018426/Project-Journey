@@ -70,14 +70,20 @@ public class EndlessTerrain : MonoBehaviour
 				{
 					terrainChunkDictionary[viewedChunkCoord].UpdateTerrainChunk();
 
-					if (terrainChunkDictionary[viewedChunkCoord].GetMeshFilter() != null)
+					MeshFilter tempMeshFilter = terrainChunkDictionary[viewedChunkCoord].GetMeshFilter();
+
+					if (tempMeshFilter != null)
 					{
-						if (terrainChunkDictionary[viewedChunkCoord].GetCurrentLOD() == 0)
+						if (tempMeshFilter.mesh.vertexCount > 0)
 						{
-							if (terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved == false)
+							if (terrainChunkDictionary[viewedChunkCoord].GetCurrentLOD() == 0)
 							{
-								roadManager.CarveByCoord(viewedChunkCoord);
-								terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved = true;
+								if (terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved == false)
+								{
+									roadManager.CarveByCoord(viewedChunkCoord);
+									terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved = true;
+									Debug.Log("Carving chunk: " + viewedChunkCoord);
+								}
 							}
 						}
 					}
