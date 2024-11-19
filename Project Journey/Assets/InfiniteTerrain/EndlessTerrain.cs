@@ -82,7 +82,11 @@ public class EndlessTerrain : MonoBehaviour
 								{
 									roadManager.CarveByCoord(viewedChunkCoord);
 									terrainChunkDictionary[viewedChunkCoord].bHasBeenCarved = true;
-									Debug.Log("Carving chunk: " + viewedChunkCoord);
+									//Debug.Log("Carving chunk: " + viewedChunkCoord);
+									
+									// Give the terrain chunk a collider based on its mesh.
+									MeshCollider newCollider = terrainChunkDictionary[viewedChunkCoord].GetGameObject().AddComponent<MeshCollider>();
+									newCollider.sharedMesh = terrainChunkDictionary[viewedChunkCoord].GetMeshFilter().mesh;
 								}
 							}
 						}
@@ -231,6 +235,11 @@ public class EndlessTerrain : MonoBehaviour
 			}
 
 			return lodIndex;
+		}
+
+		public GameObject GetGameObject()
+		{
+			return meshObject;
 		}
 	}
 
