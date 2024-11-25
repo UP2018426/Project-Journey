@@ -85,8 +85,8 @@ public class EndlessTerrain : MonoBehaviour
 									//Debug.Log("Carving chunk: " + viewedChunkCoord);
 									
 									// Give the terrain chunk a collider based on its mesh.
-									MeshCollider newCollider = terrainChunkDictionary[viewedChunkCoord].GetGameObject().AddComponent<MeshCollider>();
-									newCollider.sharedMesh = terrainChunkDictionary[viewedChunkCoord].GetMeshFilter().mesh;
+									//MeshCollider newCollider = terrainChunkDictionary[viewedChunkCoord].GetGameObject().AddComponent<MeshCollider>();
+									//newCollider.sharedMesh = terrainChunkDictionary[viewedChunkCoord].GetMeshFilter().mesh;
 								}
 							}
 						}
