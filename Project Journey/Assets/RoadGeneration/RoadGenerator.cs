@@ -40,7 +40,7 @@ public class RoadGenerator : MonoBehaviour
 
     private void Update()
     {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         /*if (Input.GetKeyDown(KeyCode.W))
         {
             GenerateRoadSegment(lastPosition + Vector3.forward);    
@@ -56,12 +56,12 @@ public class RoadGenerator : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.D))
         {
             GenerateRoadSegment(lastPosition + Vector3.right);    
-        }*/
+        }
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
             GenerateRoadSegment();
-        }
+        }*/
 #endif
     }
 

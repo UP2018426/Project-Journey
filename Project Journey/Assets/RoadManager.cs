@@ -61,7 +61,7 @@ public class RoadManager : MonoBehaviour
 
     [SerializeField] private int maxJobs;
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
     [SerializeField] private int currentTotalJobs;
     [SerializeField] private TextMeshProUGUI maxJobsText, activeJobsText;
 #endif
@@ -262,7 +262,7 @@ public class RoadManager : MonoBehaviour
             }
         }
         
-#if UNITY_EDITOR
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         currentTotalJobs = inProgressJobs.Count + queuedJobs.Count;
         activeJobsText.text = "Active Jobs: " + currentTotalJobs;
         maxJobsText.text = "Max Jobs: " + maxJobs;
