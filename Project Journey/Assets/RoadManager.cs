@@ -143,7 +143,7 @@ public class RoadManager : MonoBehaviour
             UpdateVisibleRoads();
         }
 
-#if UNITY_EDITOR
+/*#if UNITY_EDITOR
         if (Input.GetKeyDown(KeyCode.Q)) // Debugging tool. TODO: remove
         {
             viewerPositionOld = viewerPosition;
@@ -215,7 +215,7 @@ public class RoadManager : MonoBehaviour
                 
             }
         }
-#endif
+#endif*/
 
         // Run through all active jobs and check if any are ready to finish up (there may be a better way to do this but I havnt found it yet...) 
         if (inProgressJobs.Count > 0)
