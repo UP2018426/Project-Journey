@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -62,6 +63,7 @@ public class RoadManager : MonoBehaviour
 
 #if UNITY_EDITOR
     [SerializeField] private int currentTotalJobs;
+    [SerializeField] private TextMeshProUGUI maxJobsText, activeJobsText;
 #endif
 
     private bool startingAreaCalculated = false;
@@ -262,6 +264,8 @@ public class RoadManager : MonoBehaviour
         
 #if UNITY_EDITOR
         currentTotalJobs = inProgressJobs.Count + queuedJobs.Count;
+        activeJobsText.text = "Active Jobs: " + currentTotalJobs;
+        maxJobsText.text = "Max Jobs: " + maxJobs;
 #endif
     }
     
