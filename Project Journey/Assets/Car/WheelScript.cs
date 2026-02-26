@@ -95,11 +95,11 @@ public class WheelScript : MonoBehaviour
 
 
 
-        float currentSpeed = carRB.velocity.magnitude;
+        float currentSpeed = carRB.linearVelocity.magnitude;
         if (currentSpeed < minSpeedToMove && currentSpeed > 0)
         {
             // Apply a force opposite to the direction of movement
-            Vector3 stopForceDirection = -carRB.velocity.normalized * stopForce;
+            Vector3 stopForceDirection = -carRB.linearVelocity.normalized * stopForce;
             carRB.AddForceAtPosition(stopForceDirection, transform.position);
         }
     }
@@ -143,7 +143,7 @@ public class WheelScript : MonoBehaviour
         float steeringVelocity = Vector3.Dot(steeringDir, tireWorldVelocity);
 
         //float steeringBasedGrip = CalculateWheelSlipAngle(slipAngleCurve);
-        if (carRB.velocity.magnitude < 0.1f)
+        if (carRB.linearVelocity.magnitude < 0.1f)
         {
             steeringSlip = 1f;
         }
@@ -158,7 +158,7 @@ public class WheelScript : MonoBehaviour
 
         averageSlip = (averageSlip + groundGripScalar) / 2;
 
-        if (carRB.velocity.magnitude < 0.1f)
+        if (carRB.linearVelocity.magnitude < 0.1f)
         {
             averageSlip = 1f;
         }
@@ -178,11 +178,11 @@ public class WheelScript : MonoBehaviour
     {
         Vector3 accelerationDirection = transform.forward;
 
-        float zSpeed = carRB.transform.InverseTransformDirection(carRB.velocity).z;
+        float zSpeed = carRB.transform.InverseTransformDirection(carRB.linearVelocity).z;
     
         if(accelerationInput != 0f)
         {
-            float carSpeed = Vector3.Dot(carRB.gameObject.transform.forward, carRB.velocity);
+            float carSpeed = Vector3.Dot(carRB.gameObject.transform.forward, carRB.linearVelocity);
 
             float normalisedSpeed = Mathf.Clamp01(Mathf.Abs(carSpeed) / carTopSpeed);
 
@@ -215,11 +215,11 @@ public class WheelScript : MonoBehaviour
             carRB.AddForceAtPosition(brakingDirection * brakeForce, transform.position);
         }*/
 
-        float currentSpeed = carRB.velocity.magnitude;
+        float currentSpeed = carRB.linearVelocity.magnitude;
         if (input != 0 && currentSpeed > /*0.05f*/ Mathf.Epsilon)
         {
             // Apply a force opposite to the direction of movement
-            Vector3 brakeForceDirection = -carRB.velocity.normalized * (input * brakeForce);
+            Vector3 brakeForceDirection = -carRB.linearVelocity.normalized * (input * brakeForce);
             carRB.AddForceAtPosition(brakeForceDirection, transform.position);
         }
     }
