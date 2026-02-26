@@ -45,7 +45,7 @@ public class RoadManager : MonoBehaviour
     
     private int chunksVisibleInViewDst;
 
-    private const float distanceToSpawnNewRoadSegment = 2500f;
+    private const float distanceToSpawnNewRoadSegment = 6000f;
 
     private const float distanceToSpawnNewRoadSegmentSqr = distanceToSpawnNewRoadSegment * distanceToSpawnNewRoadSegment;
 
@@ -356,29 +356,38 @@ public class RoadManager : MonoBehaviour
         {
             if (selectedMeshFilter.sharedMesh.vertexCount > 0)
             {
-                // This finds the nearest couple of splines to the chunk. This affects performance way more than I'd expect :/
+                // This finds the nearest couple of splines to the chunk.
                 // TODO: Investigate performance impact of finding closest splines
-                // Note: Burst may not be appropriate here as there'd have to be a conversion to NativeSpline and back again. This may not be worth it.
-                
-                int splinesToSample = 3;
-                
-                List<Spline> tempSplines = new List<Spline>(AllRoadSplineListSpline);
-                List<Vector3> tempPositions = new List<Vector3>(AllRoadSplineListPos);
-                Spline[] closestSplines = new Spline[splinesToSample];
 
-                Vector3 centerV3 = selectedMeshFilter.transform.position;
-                
+                int splinesToSample = 3;
+
+                // Create a shortlist of splines with active GameObjects
+                List<Spline> tempSplines = new List<Spline>();
+                List<Vector3> tempPositions = new List<Vector3>();
+        
+                for (int i = 0; i < AllRoadSplineListSpline.Count; i++)
+                {
+                    if (AllRoadSplineList[i].gameObject.activeSelf)
+                    {
+                        tempSplines.Add(AllRoadSplineListSpline[i]);
+                        tempPositions.Add(AllRoadSplineListPos[i]);
+                    }
+                }
+
                 if (tempSplines.Count < splinesToSample)
                 {
-                    return;
+                    return; // Not enough splines to sample
                 }
-                
+
+                Spline[] closestSplines = new Spline[splinesToSample];
+                Vector3 centerV3 = selectedMeshFilter.transform.position;
+
                 // Find the nearest "splinesToSample" of splines to the chunk
                 for (int j = 0; j < splinesToSample; j++) // How many road segments should be sampled per chunk
                 {
                     float closestPointSqr = float.MaxValue;
                     int closestRoadIndex = 0;
-                    
+
                     for (int i = 0; i < tempSplines.Count; i++)
                     {
                         Vector3 offset = tempPositions[i] - centerV3;
@@ -391,11 +400,12 @@ public class RoadManager : MonoBehaviour
                     }
 
                     closestSplines[j] = tempSplines[closestRoadIndex];
-                    
+
+                    // Remove the closest spline from the shortlist
                     tempPositions.RemoveAt(closestRoadIndex);
                     tempSplines.RemoveAt(closestRoadIndex);
                 }
-                
+
                 CarveChunkMeshFilter(selectedMeshFilter, closestSplines);
             }
         }
