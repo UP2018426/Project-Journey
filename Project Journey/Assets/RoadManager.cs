@@ -68,7 +68,7 @@ public class RoadManager : MonoBehaviour
 
     private bool startingAreaCalculated = false;
 
-    private void Start()
+    private void Awake()
     {
         chunksVisibleInViewDst = Mathf.RoundToInt(maxRoadViewDistance / chunkSize);
         
@@ -298,19 +298,19 @@ public class RoadManager : MonoBehaviour
         }
     }
 
-    void CarveChunkMeshFilter(MeshFilter chunkMeshFilter, Spline[] splines)
+    void CarveChunkMeshFilter(MeshFilter chunkMeshFilter, List<Spline> splines)
     {
         Matrix4x4 chunkMatrix = chunkMeshFilter.gameObject.GetComponent<Transform>().localToWorldMatrix;
         
         // Convert chunkMeshFilter to a NativeArray<float3>
         NativeArray<float3> meshVertices = new NativeArray<float3>(chunkMeshFilter.sharedMesh.vertices.Length, Allocator.Persistent);
-        MeshFilterToFloat3Array(chunkMeshFilter, meshVertices);
-
-        if (splines.Length > 0)
+        MeshFilterToFloat3Array(chunkMeshFilter, meshVertices); 
+        
+        if (splines.Count > 0)
         {
-            NativeArray<NativeSpline> nativeSplines = new NativeArray<NativeSpline>(splines.Length, Allocator.Persistent);
+            NativeArray<NativeSpline> nativeSplines = new NativeArray<NativeSpline>(splines.Count, Allocator.Persistent);
             
-            for (int i = 0; i < splines.Length; i++)
+            for (int i = 0; i < splines.Count; i++)
             {
                 Spline modifiedSpline = new Spline(splines[i]);
                 if (modifiedSpline.Count > 0)
@@ -359,54 +359,31 @@ public class RoadManager : MonoBehaviour
                 // This finds the nearest couple of splines to the chunk.
                 // TODO: Investigate performance impact of finding closest splines
 
-                int splinesToSample = 3;
+                MeshRenderer mr = selectedMeshFilter.transform.GetComponent<MeshRenderer>();
+                float terrainWidth = mr.bounds.max.x - mr.bounds.min.x; // TODO: This could be a const! should always be 1190
 
-                // Create a shortlist of splines with active GameObjects
-                List<Spline> tempSplines = new List<Spline>();
-                List<Vector3> tempPositions = new List<Vector3>();
-        
-                for (int i = 0; i < AllRoadSplineListSpline.Count; i++)
+                Collider[] roadHits = Physics.OverlapBox(selectedMeshFilter.transform.position,
+                    new Vector3(terrainWidth / 2f, 1000f, terrainWidth / 2f), 
+                    transform.rotation);
+                
+                List<Spline> closestSplines = new List<Spline>();
+                
+                for (int i = 0; i < roadHits.Length; i++)
                 {
-                    if (AllRoadSplineList[i].gameObject.activeSelf)
+                    if (roadHits[i].TryGetComponent(out SplineContainer outSpline))
                     {
-                        tempSplines.Add(AllRoadSplineListSpline[i]);
-                        tempPositions.Add(AllRoadSplineListPos[i]);
+                        closestSplines.Add(outSpline.Spline);
+                    }
+                    else
+                    {
+                        roadHits[i] = null;
                     }
                 }
 
-                if (tempSplines.Count < splinesToSample)
+                if (closestSplines.Count > 0)
                 {
-                    return; // Not enough splines to sample
+                    CarveChunkMeshFilter(selectedMeshFilter, closestSplines);
                 }
-
-                Spline[] closestSplines = new Spline[splinesToSample];
-                Vector3 centerV3 = selectedMeshFilter.transform.position;
-
-                // Find the nearest "splinesToSample" of splines to the chunk
-                for (int j = 0; j < splinesToSample; j++) // How many road segments should be sampled per chunk
-                {
-                    float closestPointSqr = float.MaxValue;
-                    int closestRoadIndex = 0;
-
-                    for (int i = 0; i < tempSplines.Count; i++)
-                    {
-                        Vector3 offset = tempPositions[i] - centerV3;
-                        float sqrLen = offset.sqrMagnitude;
-                        if (sqrLen < closestPointSqr)
-                        {
-                            closestPointSqr = sqrLen;
-                            closestRoadIndex = i;
-                        }
-                    }
-
-                    closestSplines[j] = tempSplines[closestRoadIndex];
-
-                    // Remove the closest spline from the shortlist
-                    tempPositions.RemoveAt(closestRoadIndex);
-                    tempSplines.RemoveAt(closestRoadIndex);
-                }
-
-                CarveChunkMeshFilter(selectedMeshFilter, closestSplines);
             }
         }
     }
