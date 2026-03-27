@@ -232,7 +232,6 @@ public class RoadManager : MonoBehaviour
                     
                     inProgressJobs[i].ChunkMeshFilter.sharedMesh.vertices = Float3ArrayToVector3Array(tempJob.vertices);
                     
-                    inProgressJobs.RemoveAt(i);
 
                     tempJob.vertices.Dispose();
                     //meshVertices.Dispose();
@@ -242,6 +241,12 @@ public class RoadManager : MonoBehaviour
                         tempJob.splines[j].Dispose();
                     }
                     tempJob.splines.Dispose();
+
+                    // Mesh should now have carving
+                    // Next up, a collider is added to the terrain.
+                    inProgressJobs[i].ChunkMeshFilter.transform.gameObject.AddComponent<MeshCollider>();
+
+                    inProgressJobs.RemoveAt(i);
                 }
             }
         }
